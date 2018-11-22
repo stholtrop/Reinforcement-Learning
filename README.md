@@ -1,2 +1,2 @@
 # Q-learning
-Q-learning attempt applied on variant of Go
+Q-learning attempt applied on the codecup 2018 game

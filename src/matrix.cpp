@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <random>
+#include <algorithm>
 
 template <typename T>
 class Matrix {
@@ -37,7 +38,8 @@ class Matrix {
 				return distribution(generator);
 			};
 			std::vector<T> v(rows*columns);
-			
+			std::generate(begin(v), end(v), gen);
+			return Matrix(rows, columns, v);
 		}
 
 		// Operators

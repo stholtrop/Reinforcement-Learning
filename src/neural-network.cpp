@@ -6,6 +6,7 @@
 
 template<typename T>
 class NeuralNetwork : public Approximator<T> {
+
 	private:
 
 		std::vector<Matrix<T>> weights;

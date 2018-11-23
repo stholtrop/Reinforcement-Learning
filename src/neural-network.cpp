@@ -2,9 +2,10 @@
 #define NEURALNETWORK
 #include "matrix.cpp"
 #include <vector>
+#include "approx.cpp"
 
 template<typename T>
-class NeuralNetwork {
+class NeuralNetwork : public Approximator<T> {
 	private:
 
 		std::vector<Matrix<T>> weights;
@@ -23,11 +24,15 @@ class NeuralNetwork {
 			}
 		}
 	
-		Matrix<T> predict(Matrix<T> m){
+		Matrix<T> evaluate(Matrix<T> m){
 			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++)
 				m = (*w ^ m) + *b;
 			return m;
 		}
+
+		void update(Matrix<T>& data, Matrix<T>& target) {
+
+		}	
 };
 
 #endif

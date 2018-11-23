@@ -1,8 +1,11 @@
+#ifndef MATRIX
+#define MATRIX
 #include <vector>
 #include <cmath>
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <random>
 
 template <typename T>
 class Matrix {
@@ -24,6 +27,18 @@ class Matrix {
   		Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
 
 		Matrix(const size_t x, const size_t y, std::vector<T> contents) : data(contents), rows(x), columns(y) {}
+
+		// Random
+
+		static Matrix<T> initializeRandom(const size_t rows, const size_t columns, const T min=-1, const T max=1) {
+			std::default_random_engine generator;
+			std::uniform_real_distribution<T> distribution(min, max);
+			auto gen = [&distribution, &generator](){
+				return distribution(generator);
+			};
+			std::vector<T> v(rows*columns);
+			
+		}
 
 		// Operators
 
@@ -84,14 +99,14 @@ class Matrix {
 				data[i] *= m[i];
 			return *this;
 		}
-		
-		Matrix<T>& operator+=(const Matrix<T>& m) { 
+
+		Matrix<T>& operator+=(const Matrix<T>& m) {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] += m[i];
 			return *this;
-		} 
-		
-		Matrix<T>& operator-=(const Matrix<T>& m) { 
+		}
+
+		Matrix<T>& operator-=(const Matrix<T>& m) {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] -= m[i];
 			return *this;
@@ -108,10 +123,10 @@ class Matrix {
 
 		// Transpose
 
-		Matrix<T> operator~() {
+		Matrix<T> transpose() {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows; i++)
-				for (unsigned int j = 0; j < columns; j++) 
+				for (unsigned int j = 0; j < columns; j++)
 					newData[j * rows + i] = data[i * columns + j];
 			return Matrix<T>(columns, rows, newData);
 		}
@@ -149,3 +164,4 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, const Matrix<T>& m) {
 	return os << m.toString();
 }
+#endif

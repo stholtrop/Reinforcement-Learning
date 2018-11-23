@@ -27,5 +27,15 @@ int main() {
 	std::cout << "A(0, 1): " << a(0, 1) << std::endl;
 	a(0, 1) = 10;
 	std::cout << "A(0, 1) = 10: " << a(0, 1) << std::endl;
+	double da = a(0, 1);
+	std::cout << "da: " << da << std::endl;
+	da = 1;
+	std::cout << "da: " << da << std::endl;
+	std::cout << "A(0, 1) = 1?: " << a(0, 1) << std::endl;
+	a[3] = 11;
+	std::cout << "A(0, 1) = 11?: " << a(0, 1) << std::endl;
+	double dz = a[3];
+	dz -= 5;
+	std::cout << "A(0, 1) = 6?: " << a(0, 1) << std::endl;
 
 }

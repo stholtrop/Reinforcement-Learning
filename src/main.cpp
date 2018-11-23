@@ -7,7 +7,10 @@
 using namespace std;
 
 int main(){
-  Matrix<double> m1 = Matrix<double>::initializeRandom(2,2);
-  cout << m1;
-  NeuralNetwork nn({1,2});
+  Matrix<float> m1 = Matrix<float>::initializeRandom(1,2);
+  NeuralNetwork nn({1, 6, 1});
+  cout << "m1:\n" << m1 << endl;
+  auto m2 = nn.predict(m1);
+  cout << "m2:\n" << m2 << endl;
+  cout << "m1:\n" << m1 << endl;
 }

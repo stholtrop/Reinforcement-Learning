@@ -20,13 +20,13 @@ class Matrix {
 
 		// Member variables
 
-		const size_t rows;
-		const size_t columns;
+		size_t rows;
+		size_t columns;
 
 		// Constructors
 
   		Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
-
+			Matrix(){}
 		Matrix(const size_t x, const size_t y, std::vector<T> contents) : data(contents), rows(x), columns(y) {}
 
 		// Random
@@ -113,6 +113,13 @@ class Matrix {
 				data[i] -= m[i];
 			return *this;
 		}
+
+		void operator=(const Matrix<T>& m){
+			columns = m.columns;
+			rows = m.rows;
+			data = m.data;
+		}
+
 
 		// Unary operators
 

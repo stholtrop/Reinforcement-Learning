@@ -190,6 +190,11 @@ class Matrix {
 			return columns == m.rows;
 		}
 
+		std::string dimensions() const {
+			std::ostringstream oss;
+			oss << rows << 'x' << columns;
+			return oss.str();
+		}
 };
 
 template<typename T>

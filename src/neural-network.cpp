@@ -6,7 +6,7 @@
 #include "approx.cpp"
 
 enum Activation {
-	TANH, SIGMOID
+	TANH, SIGMOID, LEAKYRELU, ELU
 };
 
 template <typename T>
@@ -31,15 +31,19 @@ public:
 		switch (type){
 			case TANH: return tanH(x);
 			case SIGMOID: return sigmoid(x);
+			case ELU: return elu(x);
+			case LEAKYRELU: return leakyRELU(x);
 			default: return sigmoid(x);
 		};
 	}
 
-	static T activationDerivative(T y, Activation type) {
+	static T activationDerivative(T x, Activation type) {
 		switch (type) {
-			case TANH: return tanHPrime(y);
-			case SIGMOID: return sigmoidPrime(y);
-			default: return sigmoidPrime(y);
+			case TANH: return tanHPrime(x);
+			case SIGMOID: return sigmoidPrime(x);
+			case ELU: return eluPrime(x);
+			case LEAKYRELU: return leakyRELUPrime(x);
+			default: return sigmoidPrime(x);
 		}
 	}
 
@@ -47,16 +51,48 @@ public:
 		return 1 / (1 + std::exp(-x));
 	}
 
-	static inline T sigmoidPrime(T y) {
-		return y*(1-y);
+	static inline T sigmoidPrime(T x) {
+		return sigmoid(x)*(1-sigmoid(x));
 	}
 
 	static inline T tanH(T x) {
 		return 2 * sigmoid(2*x) - 1;
 	}
 
-	static inline T tanHPrime(T y) {
-		return 1 / (1 - y * y);
+	static inline T tanHPrime(T x) {
+		return 1 - tanH(x) * tanH(x);
+	}
+
+	static inline T elu(T x, T a) {
+		if (x > 0) {
+			return x;
+		} else {
+			return a * (std::exp(x) - 1);
+		};
+	}
+
+	static inline T eluPrime(T x, T a) {
+		if (x > 0) {
+			return 1.0;
+		} else {
+			return elu(x, a) + a;
+		};
+	}
+
+	static inline T leakyRELU(T x) {
+		if (x > 0) {
+			return x;
+		} else {
+			return 0.01 * x;
+		};
+	}
+
+	static inline T leakyRELUPrime(T x) {
+		if (x > 0){
+			return 1.0;
+		} else {
+			return 0.01;
+		};
 	}
 };
 
@@ -92,8 +128,19 @@ class NeuralNetwork : public Approximator<T> {
 			return m;
 		}
 
-		void update(Matrix<T>& data, Matrix<T>& target) {
+		std::vector<Matrix<T>> playback(Matrix<T> m){
+			std::vector<Matrix<T>> backwards;
+			backwards.push_back(m);
+			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++){
+				m = Activator<T>::activation((*w ^ m) + *b, activationType);
+				backwards.push_back(m);
+			}
+			return backwards;
+		}
 
+		void update(Matrix<T>& data, Matrix<T>& target) {
+			std::vector<Matrix<T>> per_layer_calculated = playback();
+			Matrix<T> error_derivative = *per_layer_calculated.rbegin() - target;
 		}
 };
 

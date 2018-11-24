@@ -3,6 +3,7 @@
 #include "matrix.cpp"
 #include <vector>
 #include <cmath>
+#include <functional>
 #include "approx.cpp"
 
 enum Activation {
@@ -13,33 +14,33 @@ template <typename T>
 class Activator {
 public:
 
-	static Matrix<T> activation(Matrix<T> m, Activation type) {
-		auto func = [&type](T x){
-			return activation(x, type);
-		};
-		return m.apply(func);
+	static Matrix<T> activation(Matrix<T>& m, Activation type) {
+		return m.apply(activation(type));
 	}
 
-	static Matrix<T> activationDerivative(Matrix<T> m, Activation type) {
-		auto func = [&type](T y){
-			return activationDerivative(y, type);
-		};
-		return m.apply(func);
+	static Matrix<T> activationDerivative(Matrix<T>& m, Activation type) {
+		return m.apply(activationDerivative(type));
 	}
 
-	static T activation(T x, Activation type) {
+	static std::function<T(T)> activation(Activation type) {
 		switch (type){
-			case TANH: return tanH(x);
-			case SIGMOID: return sigmoid(x);
-			default: return sigmoid(x);
+			case TANH: 
+				return [&type](T x) {return tanH(x);};
+			case SIGMOID: 
+				return [&type](T x) {return sigmoid(x);};
+			default: 
+				return [&type](T x) {return sigmoid(x);};
 		};
 	}
 
-	static T activationDerivative(T y, Activation type) {
+	static std::function<T(T)> activationDerivative(Activation type) {
 		switch (type) {
-			case TANH: return tanHPrime(y);
-			case SIGMOID: return sigmoidPrime(y);
-			default: return sigmoidPrime(y);
+			case TANH: 
+				return [&type](T x) {return tanHPrime(y);};
+			case SIGMOID: 
+				return [&type](T x) {return sigmoidPrime(y);};
+			default: 
+				return [&type](T x) {return sigmoidPrime(y);};
 		}
 	}
 

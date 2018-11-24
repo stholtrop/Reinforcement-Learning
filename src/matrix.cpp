@@ -1,7 +1,6 @@
 #ifndef MATRIX
 #define MATRIX
 #include <vector>
-#include <cmath>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -133,7 +132,7 @@ class Matrix {
 
 		// Map, apply function
 
-		Matrix<T> apply(std::function<T(T)> function) {
+		Matrix<T> apply(const std::function<T(T)>& function) {
 			std::vector<T> newData(rows*columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = function(data[i]);

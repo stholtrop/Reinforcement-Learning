@@ -63,7 +63,7 @@ class Matrix {
 		// Metrics on all the following operators are assumed to be correct
 
 		// Cross product
-		Matrix<T> operator^(const Matrix<T>& m) {
+		Matrix<T> operator^(const Matrix<T>& m) const {
 			std::vector<T> newData(rows * m.columns);
 			for (unsigned int i = 0; i < rows * m.columns; i++) {
 				int x = i / m.columns;
@@ -75,21 +75,21 @@ class Matrix {
 		}
 
 		// Hadamard product
-		Matrix<T> operator*(const Matrix<T>& m) {
+		Matrix<T> operator*(const Matrix<T>& m) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] * m.data[i];
 			return Matrix<T>(rows, columns, newData);
 		}
 
-		Matrix<T> operator+(const Matrix<T>& m) {
+		Matrix<T> operator+(const Matrix<T>& m) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] + m.data[i];
 			return Matrix<T>(rows, columns, newData);
 		}
 
-		Matrix<T> operator-(const Matrix<T>& m) {
+		Matrix<T> operator-(const Matrix<T>& m) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] - m.data[i];
@@ -137,6 +137,12 @@ class Matrix {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = function(data[i]);
 			return Matrix<T>(rows, columns, newData);
+		}
+
+		static std::function<Matrix<T>(const Matrix<T>&)> wrap(const std::function<T(T)>& function) {
+			return [function] (const Matrix<T>& m) {
+				return m.apply(function);
+			};
 		}
 
 		// Transpose

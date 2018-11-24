@@ -5,6 +5,7 @@
 #include <cmath>
 #include "approx.cpp"
 #include "activators.cpp"
+#include <functional>
 
 template<typename T>
 class NeuralNetwork : public Approximator<T> {
@@ -13,16 +14,18 @@ class NeuralNetwork : public Approximator<T> {
 
 		std::vector<Matrix<T>> weights;
 		std::vector<Matrix<T>> biases;
-		size_t input_size;
-		size_t output_size;
-		Activation activationType;
+		size_t inputSize;
+		size_t outputSize;
+		std::function<Matrix<T>(const Matrix<T>&)> activation;
+		std::function<Matrix<T>(const Matrix<T>&)> derivative;
 
 	public:
 
-		NeuralNetwork(std::vector<size_t> sizes, Activation type) {
-			activationType = type;
-			input_size = sizes[0];
-			output_size = *sizes.rbegin();
+		NeuralNetwork(std::vector<size_t> sizes, const Function<T>& av) {
+			activation = Matrix<T>::wrap([&av] (const T x) { return av.function(x);});
+			derivative = Matrix<T>::wrap([&av] (const T x) { return av.derivative(x);});
+			inputSize = sizes[0];
+			outputSize = *sizes.rbegin();
 			for (auto p = sizes.begin(), c = sizes.begin() + 1; c < sizes.end(); c++, p++) {
 				biases.push_back(Matrix<T>::initializeRandom(*c, 1));
 				weights.push_back(Matrix<T>::initializeRandom(*c, *p));
@@ -30,9 +33,8 @@ class NeuralNetwork : public Approximator<T> {
 		}
 
 		Matrix<T> evaluate(Matrix<T> m){
-			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++){
-				m = Activator<T>::activation((*w ^ m) + *b, activationType);
-			}
+			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++)
+				m = activation((*w ^ m) + *b);
 			return m;
 		}
 
@@ -40,7 +42,7 @@ class NeuralNetwork : public Approximator<T> {
 			std::vector<Matrix<T>> backwards;
 			backwards.push_back(m);
 			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++){
-				m = Activator<T>::activation((*w ^ m) + *b, activationType);
+				m = activation((*w ^ m) + *b);
 				backwards.push_back(m);
 			}
 			return backwards;

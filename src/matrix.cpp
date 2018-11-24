@@ -7,6 +7,7 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
+#include <functional>
 
 template <typename T>
 class Matrix {
@@ -25,8 +26,8 @@ class Matrix {
 
 		// Constructors
 
+		Matrix() {}
   		Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
-			Matrix(){}
 		Matrix(const size_t x, const size_t y, std::vector<T> contents) : data(contents), rows(x), columns(y) {}
 
 		// Random
@@ -38,7 +39,7 @@ class Matrix {
 				return distribution(generator);
 			};
 			std::vector<T> v(rows*columns);
-			std::generate(begin(v), end(v), gen);
+			std::generate(v.begin(), v.end(), gen);
 			return Matrix(rows, columns, v);
 		}
 
@@ -128,6 +129,15 @@ class Matrix {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = -data[i];
 			return Matrix<T>(rows, columns, newData);
+		}
+
+		// Map, apply function
+
+		Matrix<T> apply(std::function<T(T)> function) {
+			std::vector<T> newData(rows*columns);
+			for (unsigned int i = 0; i < rows * columns; i++)
+				newData[i] = function(data[i]);
+			return Matrix<T>(columns, rows, newData);
 		}
 
 		// Transpose

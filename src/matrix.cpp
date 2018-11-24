@@ -137,7 +137,7 @@ class Matrix {
 			std::vector<T> newData(rows*columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = function(data[i]);
-			return Matrix<T>(columns, rows, newData);
+			return Matrix<T>(rows, columns, newData);
 		}
 
 		// Transpose

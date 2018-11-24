@@ -87,7 +87,7 @@ class NeuralNetwork : public Approximator<T> {
 
 		Matrix<T> evaluate(Matrix<T> m){
 			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++){
-				m = Activator<T>::activation((*w ^ m) + *b, type);
+				m = Activator<T>::activation((*w ^ m) + *b, activationType);
 			}
 			return m;
 		}

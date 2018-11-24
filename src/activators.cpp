@@ -6,6 +6,7 @@
 template<typename T>
 class Function {
 	public:
+
 		virtual T function(T x) const = 0;
 		virtual T derivative(T x) const = 0;
 };
@@ -13,6 +14,7 @@ class Function {
 template<typename T>
 class Sigmoid : public Function<T> {
 	public:
+
 		T function(T x) const {
 			return 1 / (1 + std::exp(-x));
 		}
@@ -25,6 +27,7 @@ class Sigmoid : public Function<T> {
 template<typename T>
 class TanH : public Function<T> {
 	public:
+
 		T function(T x) const {
 			return 2 / (1 + std::exp(-2*x)) - 1;
 		}
@@ -37,6 +40,7 @@ class TanH : public Function<T> {
 template<typename T>
 class RELU : public Function<T> {
 	public:
+
 		T function(T x) const {
 			return x > 0 ? x : 0;
 		}
@@ -49,6 +53,7 @@ class RELU : public Function<T> {
 template<typename T>
 class LeakyRELU : public Function<T> {
 	public:
+
 		T function(T x) const {
 			return x > 0 ? x : 0.1 * x;			
 		}
@@ -61,9 +66,11 @@ class LeakyRELU : public Function<T> {
 template<typename T>
 class ELU : public Function<T> {
 	private:
+
 		T a;
 
 	public:
+
 		ELU(T x) : a(x) {}
 
 		T function(T x) const {

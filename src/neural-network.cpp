@@ -2,6 +2,7 @@
 #define NEURALNETWORK
 #include "matrix.cpp"
 #include <vector>
+#include <algorithm>
 #include <cmath>
 #include "approx.cpp"
 #include "activators.cpp"
@@ -48,9 +49,36 @@ class NeuralNetwork : public Approximator<T> {
 			return backwards;
 		}
 
-		void update(Matrix<T>& data, Matrix<T>& target) {
-			std::vector<Matrix<T>> per_layer_calculated = playback(data);
-			Matrix<T> error_derivative = *per_layer_calculated.rbegin() - target;
+		void update(Matrix<T>& data, Matrix<T>& target, const T &learning_rate) {
+			std::vector<Matrix<T>> x = playback(data);
+			Matrix<T> error_derivative = x.back() - target;
+			std::cout << x.back().rows << "x" << x.back().columns << std::endl;
+			std::cout << weights.size() << std::endl;
+			Matrix<T> last_delta = error_derivative * Activator<T>::activationDerivative(weights.back() ^ x.rbegin()[1], activationType);
+			std::cout << last_delta.rows << "x" << last_delta.columns << std::endl;
+			std::vector<Matrix<T>> deltas;
+			deltas.push_back(last_delta);
+			std::cout << "Going into loop" << std::endl;
+			for (int i = weights.size() - 2; i >= 0; i--) {
+				std::cout << i << std::endl;
+				std::cout << weights[i].rows << "x" << weights[i].columns << std::endl;
+				std::cout << x[i].rows << "x" << x[i].columns << std::endl;
+				Matrix<T> delta = weights[i+1].transpose() ^ deltas.back() * Activator<T>::activationDerivative(weights[i] ^ x[i], activationType);;
+				std::cout << delta.rows << "x" << delta.columns << std::endl;
+				deltas.push_back(delta);
+			};
+			std::reverse(deltas.begin(), deltas.end());
+			for (unsigned int i = 0; i < deltas.size(); i++) {
+				std::cout << "Updating " << weights[i].rows << "x" << weights[i].columns << std::endl;
+				std::cout << "with: " << (deltas[i] ^ x[i].transpose()).rows << "x" << (deltas[i] ^ x[i].transpose()).columns << std::endl;
+				weights[i] -= (deltas[i] ^ x[i].transpose()) * learning_rate;
+			};
+		}
+
+		void train(Matrix<T> &data, Matrix<T> &target, const T &learning_rate){
+			for (int i = 0; i < 1000; i++) {
+				update(data, target, learning_rate);
+			};
 		}
 };
 

@@ -81,6 +81,14 @@ class Matrix {
 				newData[i] = data[i] * m.data[i];
 			return Matrix<T>(rows, columns, newData);
 		}
+		
+		// Hadamard with numbers
+		Matrix<T> operator*(const T &num) {
+			std::vector<T> newData(rows * columns);
+			for (unsigned int i = 0; i < rows * columns; i++)
+				newData[i] = data[i] * num;
+			return Matrix<T>(rows, columns, newData);
+		}
 
 		Matrix<T> operator+(const Matrix<T>& m) const {
 			std::vector<T> newData(rows * columns);

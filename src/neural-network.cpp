@@ -24,10 +24,10 @@ class NeuralNetwork : public Approximator<T> {
 
 	public:
 
-		NeuralNetwork(std::vector<size_t> sizes, const Function<T>& av) {
+		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av) {
 
-			activation = Matrix<T>::wrap([&av] (const T x) { return av.function(x);});
-			derivative = Matrix<T>::wrap([&av] (const T x) { return av.derivative(x);});
+			activation = Matrix<T>::wrap([av] (const T x) { return av->function(x);});
+			derivative = Matrix<T>::wrap([av] (const T x) { return av->derivative(x);});
 			inputSize = sizes[0];
 			outputSize = *sizes.rbegin();
 
@@ -40,12 +40,8 @@ class NeuralNetwork : public Approximator<T> {
 
 		Matrix<T> evaluate(Matrix<T> m){
 			
-			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++) {
-				std::cout << w->dimensions() << " ^ " << m.dimensions() << " + " << b->dimensions() << std::endl;
-				std::cout << *w << std::endl << m << std::endl << *b << std::endl;
+			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++) 
 				m = activation((*w ^ m) + *b);
-				std::cout << "New m: " << m.dimensions() << std::endl;
-			}
 
 			return m;
 		}

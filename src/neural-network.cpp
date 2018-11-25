@@ -7,14 +7,15 @@
 #include "approx.cpp"
 #include "activators.cpp"
 #include <functional>
+#include <utility>
 
 template<typename T>
 class NeuralNetwork : public Approximator<T> {
-
+	using VectorMatrix = typename std::vector<Matrix<T>>;
 	private:
 
-		std::vector<Matrix<T>> weights;
-		std::vector<Matrix<T>> biases;
+		VectorMatrix weights;
+		VectorMatrix biases;
 
 		size_t inputSize;
 		size_t outputSize;
@@ -39,17 +40,17 @@ class NeuralNetwork : public Approximator<T> {
 
 
 		Matrix<T> evaluate(Matrix<T> m){
-			
-			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++) 
+
+			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++)
 				m = activation((*w ^ m) + *b);
 
 			return m;
 		}
 
 
-		std::vector<Matrix<T>> playback(Matrix<T> m) {
+		VectorMatrix playback(const Matrix<T> m) {
 
-			std::vector<Matrix<T>> backwards;
+			VectorMatrix backwards;
 			backwards.push_back(m);
 
 			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++)
@@ -58,28 +59,67 @@ class NeuralNetwork : public Approximator<T> {
 			return backwards;
 		}
 
-
-		void update(Matrix<T>& data, Matrix<T>& target, const T learning_rate) {
-
-			std::vector<Matrix<T>> values = playback(data);
-			std::vector<Matrix<T>> deltas;
-
-			Matrix<T> error_derivative = values.back() - target;
-			Matrix<T> last_delta = error_derivative * activation(weights.back() ^ values.rbegin()[1]); 
+		VectorMatrix retrieve_deltas(const Matrix<T> &x, const Matrix<T> &y, const VectorMatrix &playback_data) {
+			Matrix<T> error_derivative = playback_data.back() - y;
+			Matrix<T> last_delta = error_derivative * derivative(weights.back() ^ playback_data.rbegin()[1]);
+			VectorMatrix deltas;
 
 			deltas.push_back(last_delta);
 
-			for (auto value = values.rbegin() + 2, weight = weights.rbegin() + 1; value < values.rend(); value++, weight++) 
-				deltas.push_back((weight + 1)->transpose() ^ deltas.back() * activation(*weight ^ *value));
+			for (int i = weights.size() - 2; i >= 0; i--) {
 
-			for (unsigned int i = 0; i < deltas.size(); i++) 
-				weights[i] -= (deltas[deltas.size() - i - 1] ^ values[i].transpose()) * learning_rate;
+				Matrix<T> delta = weights[i+1].transpose() ^ deltas.back() * derivative(weights[i] ^ playback_data[i]);
+				deltas.push_back(delta);
+			};
+
+			std::reverse(deltas.begin(), deltas.end());
+			return deltas;
+		}
+
+		std::pair<VectorMatrix, VectorMatrix> retrieve_nablas(const VectorMatrix &batch_in, const VectorMatrix &batch_out, const T &learning_rate) {
+			// Learning rate per datapoint
+			T learning_rate_real = learning_rate / (T)batch_in.size();
+
+			VectorMatrix nabla_b;
+			VectorMatrix nabla_w;
+
+			// Populate nablas
+			for (size_t i = 0; i < weights.size(); i++) {
+				nabla_b.push_back(Matrix<T>(biases[i].rows, biases[i].columns));
+				nabla_w.push_back(Matrix<T>(weights[i].rows, weights[i].columns));
+			};
+			// Retrieve deltas per datapoint and add them up in nablas
+			for (size_t i = 0; i < batch_in.size(); i++) {
+
+				VectorMatrix playback_data = playback(batch_in[i]);
+				VectorMatrix deltas = retrieve_deltas(batch_in[i], batch_out[i], playback_data);
+
+				for (size_t j = 0; j < deltas.size(); j++) {
+						nabla_w[j] += (deltas[j] ^ playback_data[i].transpose()) * learning_rate_real;
+						nabla_b[j] += deltas[i];
+				};
+			};
+
+			return std::make_pair(nabla_w, nabla_b);
 		}
 
 
-		void train(Matrix<T>& data, Matrix<T>& targets, const T learning_rate) {
-			for (int i = 0; i < 1000; i++) 
-				update(data, targets, learning_rate);
+		void update(const VectorMatrix& data, const VectorMatrix& target, const T &learning_rate) {
+			auto nablas = retrieve_nablas(data, target, learning_rate);
+			VectorMatrix nabla_w = nablas.first;
+			VectorMatrix nabla_b = nablas.second;
+
+			// Update weights
+			for (size_t i = 0; i < weights.size(); i++) {
+				weights[i] -= nabla_w[i];
+				biases[i] -= nabla_b[i];
+			};
+		}
+
+		void train(const VectorMatrix &data, const VectorMatrix &target, const T &learning_rate){
+			for (int i = 0; i < 1000; i++) {
+				update(data, target, learning_rate);
+			};
 		}
 };
 

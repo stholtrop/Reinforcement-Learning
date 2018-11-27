@@ -82,8 +82,7 @@ class Matrix {
 			return Matrix<T>(rows, columns, newData);
 		}
 		
-		// Hadamard with numbers
-		Matrix<T> operator*(const T &num) {
+		Matrix<T> operator*(const T num) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] * num;
@@ -97,6 +96,13 @@ class Matrix {
 			return Matrix<T>(rows, columns, newData);
 		}
 
+		Matrix<T> operator+(const T num) const {
+			std::vector<T> newData(rows * columns);
+			for (unsigned int i = 0; i < rows * columns; i++)
+				newData[i] = data[i] + num;
+			return Matrix<T>(rows, columns, newData);
+		}
+
 		Matrix<T> operator-(const Matrix<T>& m) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
@@ -104,9 +110,23 @@ class Matrix {
 			return Matrix<T>(rows, columns, newData);
 		}
 
+		Matrix<T> operator-(const T num) const {
+			std::vector<T> newData(rows * columns);
+			for (unsigned int i = 0; i < rows * columns; i++)
+				newData[i] = data[i] - num;
+			return Matrix<T>(rows, columns, newData);
+		}
+
+
 		Matrix<T>& operator*=(const Matrix<T>& m) {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] *= m[i];
+			return *this;
+		}
+
+		Matrix<T>& operator*=(const T num) {
+			for (unsigned int i = 0; i < rows * columns; i++)
+				data[i] *= num;
 			return *this;
 		}
 
@@ -115,10 +135,22 @@ class Matrix {
 				data[i] += m[i];
 			return *this;
 		}
+		
+		Matrix<T>& operator+=(const T num) {
+			for (unsigned int i = 0; i < rows * columns; i++)
+				data[i] += num;
+			return *this;
+		}
 
 		Matrix<T>& operator-=(const Matrix<T>& m) {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] -= m[i];
+			return *this;
+		}
+
+		Matrix<T>& operator-=(const T num) {
+			for (unsigned int i = 0; i < rows * columns; i++)
+				data[i] -= num;
 			return *this;
 		}
 
@@ -201,4 +233,20 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, const Matrix<T>& m) {
 	return os << m.toString();
 }
+
+template<typename T>
+inline Matrix<T> operator+(int i, const Matrix<T>& m) {
+	return m + i;
+}
+
+template<typename T>
+inline Matrix<T> operator-(int i, const Matrix<T>& m) {
+	return m - i;
+}
+
+template<typename T>
+inline Matrix<T> operator*(int i, const Matrix<T>& m) {
+	return m * i;
+}
+
 #endif

@@ -13,8 +13,7 @@ int main() {
 	std::cout << "A * B:\n" << a * b << std::endl;
 	std::cout << "A ^ C:\n" << (a ^ c) << std::endl;
 	std::cout << "C:\n" << c.transpose() << std::endl;
-	std::cout << "-A:\n" << -a << std::endl;
-	std::cout << "A += B:\n" << (a += b) << std::endl;
+	std::cout << "-A:\n" << -a << std::endl;	std::cout << "A += B:\n" << (a += b) << std::endl;
 	std::cout << "A:\n" << a << std::endl;
 	std::cout << "A -= B:\n" << (a -= b) << std::endl;
 	std::cout << "A:\n" << a << std::endl;
@@ -37,5 +36,10 @@ int main() {
 	double dz = a[3];
 	dz -= 5;
 	std::cout << "A(0, 1) = 6?: " << a(0, 1) << std::endl;
-
+	std::cout << "Testing SSV reading and writing capabilities" << std::endl;
+	a.writeToFile("Test.ssv");
+	std::cout << "Write of A successful" << std::endl;
+	Matrix<double> read_matrix = Matrix<double>::readFromFile("test.ssv");
+	std::cout << "Read successful" << std::endl;
+	std::cout << read_matrix;
 }

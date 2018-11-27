@@ -34,23 +34,29 @@ class Matrix {
 		// Matrix read and write
 		static Matrix<T> readFromFile(const std::string &filename) {
 			std::ifstream file;
-			std::vector<T> data;
-			size_t rows;
-			size_t columns;
 			try {
 				file.open(filename);
 			} catch (const std::ifstream::failure &e) {
 				std::cerr << "Error reading file" << std::endl;
 				throw "Error reading file";
 			}
+			Matrix<T> m = Matrix<T>::readFromFile(file);
+			file.close();
+			return m;
+		}
+
+		static Matrix<T> readFromFile(std::ifstream &file) {
+			std::vector<T> data;
+			size_t rows;
+			size_t columns;
 			file >> rows;
 			file >> columns;
-			while (file.good()) {
+			std::cout << rows << " " << columns;
+			while (data.size() <= rows * columns) {
 				T temp;
 				file >> temp;
 				data.push_back(temp);
 			}
-			file.close();
 			return Matrix<T>(rows, columns, data);
 		}
 
@@ -77,11 +83,15 @@ class Matrix {
 				std::cerr << "Error reading file" << std::endl;
 				throw "Error writing file";
 			}
+			writeToFile(file);
+			file.close();
+		}
+
+		void writeToFile(std::ofstream &file) {
 			file << rows << " " << columns << " ";
 			for (auto i : data) {
 				file << i << " ";
 			}
-			file.close();
 		}
 
 		void writeToFile(std::ofstream &file) {

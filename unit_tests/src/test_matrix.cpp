@@ -1,4 +1,5 @@
 #include "matrix.cpp"
+#include <fstream>
 
 int main() {
 	Matrix<double> a(3, 3, {0, 1, 2, 3, 4, 5, 6, 7, 8});
@@ -41,5 +42,17 @@ int main() {
 	std::cout << "Write of A successful" << std::endl;
 	Matrix<double> read_matrix = Matrix<double>::readFromFile("test.ssv");
 	std::cout << "Read successful" << std::endl;
-	std::cout << read_matrix;
+	std::cout << read_matrix << std::endl;
+	std::cout << "Writing A and B" << std::endl;
+	std::ofstream file("Test2.ssv");
+	a.writeToFile(file);
+	b.writeToFile(file);
+	file.close();
+	std::cout << "Reading A and B" << std::endl;
+	std::ifstream file2("Test2.ssv");
+	double temp;
+	while (file2 >> temp) {
+		std::cout << " " << temp;
+	}
+	std::cout << 	Matrix<double>::readFromFile(file2) << std::endl << Matrix<double>::readFromFile(file2);
 }

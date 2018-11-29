@@ -37,10 +37,12 @@ int main() {
 	double dz = a[3];
 	dz -= 5;
 	std::cout << "A(0, 1) = 6?: " << a(0, 1) << std::endl;
+	std::cout << "Retrieve columns and rows" << std::endl;
+	std::cout << b.getRow(0) << std::endl << b.getColumn(0) <<std::endl;
 	std::cout << "Testing SSV reading and writing capabilities" << std::endl;
 	a.writeToFile("Test.ssv");
 	std::cout << "Write of A successful" << std::endl;
-	Matrix<double> read_matrix = Matrix<double>::readFromFile("test.ssv");
+	Matrix<double> read_matrix = Matrix<double>::readFromFile("Test.ssv");
 	std::cout << "Read successful" << std::endl;
 	std::cout << read_matrix << std::endl;
 	std::cout << "Writing A and B" << std::endl;
@@ -50,9 +52,5 @@ int main() {
 	file.close();
 	std::cout << "Reading A and B" << std::endl;
 	std::ifstream file2("Test2.ssv");
-	double temp;
-	while (file2 >> temp) {
-		std::cout << " " << temp;
-	}
 	std::cout << 	Matrix<double>::readFromFile(file2) << std::endl << Matrix<double>::readFromFile(file2);
 }

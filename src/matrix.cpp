@@ -51,8 +51,7 @@ class Matrix {
 			size_t columns;
 			file >> rows;
 			file >> columns;
-			std::cout << rows << " " << columns;
-			while (data.size() <= rows * columns) {
+			while (data.size() < rows * columns) {
 				T temp;
 				file >> temp;
 				data.push_back(temp);
@@ -264,6 +263,29 @@ class Matrix {
 				for (unsigned int j = 0; j < columns; j++)
 					newData[j * rows + i] = data[i * columns + j];
 			return Matrix<T>(columns, rows, newData);
+		}
+
+		// Retrieve row or column
+
+		Matrix<T> getRow(const unsigned int index) {
+			// Index is nth row
+			if (index > rows-1) {
+				return Matrix<T>();
+			}
+			std::vector<T> newData;
+			for (unsigned int i = index * columns; i < (index+1)*columns && i < rows*columns; i++) {
+				newData.push_back(data[i]);
+			}
+			return Matrix<T>(1, columns, newData);
+		}
+
+		Matrix<T> getColumn(const unsigned int index) {
+			// Index is nth column
+			std::vector<T> newData;
+			for (unsigned int i = index; i < columns*rows; i += columns) {
+				newData.push_back(data[i]);
+			}
+			return Matrix<T>(rows, 1, newData);
 		}
 
 		// To string

@@ -54,6 +54,21 @@ class Matrix {
 			return Matrix<T>(rows, columns, data);
 		}
 
+
+		static Matrix<T> readFromFile(std::ifstream &file) {
+			std::vector<T> data;
+			size_t rows;
+			size_t columns;
+			file >> rows;
+			file >> columns;
+			while (data.size() < rows * columns) {
+				T temp;
+				file >> temp;
+				data.push_back(temp);
+			}
+			return Matrix<T>(rows, columns, data);
+		}
+
 		void writeToFile(const std::string &filename) {
 			std::ofstream file;
 			try {
@@ -67,6 +82,13 @@ class Matrix {
 				file << i << " ";
 			}
 			file.close();
+		}
+
+		void writeToFile(std::ofstream &file) {
+			file << rows << " " << columns << " ";
+			for (auto i : data) {
+				file << i << " ";
+			}
 		}
 
 		// Random

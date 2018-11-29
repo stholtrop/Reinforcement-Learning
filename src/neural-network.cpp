@@ -8,11 +8,12 @@
 #include "activators.cpp"
 #include <functional>
 #include <utility>
+#include <fstream>
 
 template<typename T>
 class NeuralNetwork : public Approximator<T> {
 	using VectorMatrix = typename std::vector<Matrix<T>>;
-	private:
+	public:
 
 		VectorMatrix weights;
 		VectorMatrix biases;
@@ -27,8 +28,7 @@ class NeuralNetwork : public Approximator<T> {
 
 		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av) {
 
-			activation = Matrix<T>::wrap([av] (const T x) { return av->function(x);});
-			derivative = Matrix<T>::wrap([av] (const T x) { return av->derivative(x);});
+			setActivation(av);
 			inputSize = sizes[0];
 			outputSize = *sizes.rbegin();
 
@@ -38,6 +38,36 @@ class NeuralNetwork : public Approximator<T> {
 			}
 		}
 
+		NeuralNetwork(size_t in, size_t out, VectorMatrix w, VectorMatrix b, const Function<T>* av) {
+			setActivation(av);
+			weights = w;
+			biases = b;
+			inputSize = in;
+			outputSize = out;
+		}
+
+		static NeuralNetwork load(std::ifstream& file, const Function<T>* av) {
+			
+			int hidden;
+			file >> hidden;
+			VectorMatrix w;
+			VectorMatrix b;
+			for (int i = 0; i < hidden; i++) {
+				w.push_back(Matrix<T>::readFromFile(file));
+				b.push_back(Matrix<T>::readFromFile(file));
+			}
+			return NeuralNetwork(w[0].columns, b.back().rows, w, b, av);
+		}
+
+		void write(std::ofstream& file) {
+			file << weights.size() << '\n';
+			for (unsigned int i = 0; i < weights.size(); i++) {
+				weights[i].writeToFile(file);
+				file << '\n';
+				biases[i].writeToFile(file);
+				file << '\n' << '\n';
+			}
+		}
 
 		Matrix<T> evaluate(Matrix<T> m){
 
@@ -121,6 +151,11 @@ class NeuralNetwork : public Approximator<T> {
 			for (int i = 0; i < 1000000; i++) {
 				update(data, target, learning_rate);
 			}
+		}
+
+		void setActivation(const Function<T>* av) {
+			activation = Matrix<T>::wrap([av] (const T x) { return av->function(x);});
+			derivative = Matrix<T>::wrap([av] (const T x) { return av->derivative(x);});
 		}
 };
 

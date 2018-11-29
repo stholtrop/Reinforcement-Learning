@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <fstream>
 #include "matrix.cpp"
 #include "neural-network.cpp"
 #include "activators.cpp"
@@ -8,15 +9,17 @@
 using namespace std;
 
 int main(){
-  Matrix<float> m1 = Matrix<float>(2,1, {1,0});
-  Matrix<float> m2 = Matrix<float>(1,1, {0});
-  Matrix<float> m3 = Matrix<float>(2,1, {0,1});
-  Matrix<float> m4 = Matrix<float>(1,1, {1});
-  NeuralNetwork<float> nn({2, 3, 1}, new Sigmoid<float>());
-  cout << nn.evaluate(m1) << endl;
-  cout << nn.evaluate(m3) << endl;
-  nn.train({m1, m3}, {m2, m4}, 1000);
-  cout << nn.evaluate(m1) << endl;
-  cout << nn.evaluate(m3) << endl;
-  return 0;
+	Sigmoid<double>* sigma = new Sigmoid<double>();
+	NeuralNetwork<double> nn1(vector<size_t>{2, 3, 1}, sigma);
+	ofstream fout("./NeuralNet1");
+	nn1.write(fout);
+	fout.close();
+	ifstream fin("./NeuralNet1");
+	NeuralNetwork<double> nn2 = NeuralNetwork<double>::load(fin, sigma);
+	fin.close();
+	cout << nn2.inputSize << ' ' << nn2.outputSize << endl;
+	for (unsigned int i = 0; i < nn2.weights.size(); i++) {
+		cout << nn2.weights[i] << endl;
+		cout << nn2.biases[i] << endl;	
+	}
 }

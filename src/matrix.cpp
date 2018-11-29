@@ -7,6 +7,7 @@
 #include <random>
 #include <algorithm>
 #include <functional>
+#include <fstream>
 
 template <typename T>
 class Matrix {
@@ -24,10 +25,71 @@ class Matrix {
 		size_t columns;
 
 		// Constructors
-
+		// Empty constructor
 		Matrix() {}
-  		Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
+		// Initializers
+  	Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
 		Matrix(const size_t x, const size_t y, std::vector<T> contents) : data(contents), rows(x), columns(y) {}
+
+		// Matrix read and write
+		static Matrix<T> readFromFile(const std::string &filename) {
+			std::ifstream file;
+			std::vector<T> data;
+			size_t rows;
+			size_t columns;
+			try {
+				file.open(filename);
+			} catch (const std::ifstream::failure &e) {
+				std::cerr << "Error reading file" << std::endl;
+				throw "Error reading file";
+			}
+			file >> rows;
+			file >> columns;
+			while (file.good()) {
+				T temp;
+				file >> temp;
+				data.push_back(temp);
+			}
+			file.close();
+			return Matrix<T>(rows, columns, data);
+		}
+
+
+		static Matrix<T> readFromFile(std::ifstream &file) {
+			std::vector<T> data;
+			size_t rows;
+			size_t columns;
+			file >> rows;
+			file >> columns;
+			while (data.size() < rows * columns) {
+				T temp;
+				file >> temp;
+				data.push_back(temp);
+			}
+			return Matrix<T>(rows, columns, data);
+		}
+
+		void writeToFile(const std::string &filename) {
+			std::ofstream file;
+			try {
+				file.open(filename);
+			} catch (const std::ofstream::failure &e) {
+				std::cerr << "Error reading file" << std::endl;
+				throw "Error writing file";
+			}
+			file << rows << " " << columns << " ";
+			for (auto i : data) {
+				file << i << " ";
+			}
+			file.close();
+		}
+
+		void writeToFile(std::ofstream &file) {
+			file << rows << " " << columns << " ";
+			for (auto i : data) {
+				file << i << " ";
+			}
+		}
 
 		// Random
 
@@ -81,7 +143,6 @@ class Matrix {
 				newData[i] = data[i] * m.data[i];
 			return Matrix<T>(rows, columns, newData);
 		}
-		
 		Matrix<T> operator*(const T num) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)

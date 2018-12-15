@@ -47,25 +47,8 @@ class Matrix {
 
 		static Matrix<T> readFromFile(std::ifstream &file) {
 			std::vector<T> data;
-			size_t rows;
-			size_t columns;
-			file >> rows;
-			file >> columns;
-			while (data.size() < rows * columns) {
-				T temp;
-				file >> temp;
-				data.push_back(temp);
-			}
-			return Matrix<T>(rows, columns, data);
-		}
-
-
-		static Matrix<T> readFromFile(std::ifstream &file) {
-			std::vector<T> data;
-			size_t rows;
-			size_t columns;
-			file >> rows;
-			file >> columns;
+			size_t rows, columns;
+			file >> rows >> columns;
 			while (data.size() < rows * columns) {
 				T temp;
 				file >> temp;
@@ -84,13 +67,6 @@ class Matrix {
 			}
 			writeToFile(file);
 			file.close();
-		}
-
-		void writeToFile(std::ofstream &file) {
-			file << rows << " " << columns << " ";
-			for (auto i : data) {
-				file << i << " ";
-			}
 		}
 
 		void writeToFile(std::ofstream &file) {
@@ -291,11 +267,9 @@ class Matrix {
 		// To string
 
 		std::string toString() const {
-			std::cout << data.size() << std::endl;
 			std::ostringstream oss;
 			oss << '[';
 			for (unsigned int i = 0; i < rows; i++) {
-				std::cout << i << std::endl;
 				if (i != 0)
 					oss << ' ';
 				oss << "[ ";

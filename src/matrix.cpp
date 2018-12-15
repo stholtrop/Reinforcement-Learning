@@ -291,9 +291,11 @@ class Matrix {
 		// To string
 
 		std::string toString() const {
+			std::cout << data.size() << std::endl;
 			std::ostringstream oss;
 			oss << '[';
 			for (unsigned int i = 0; i < rows; i++) {
+				std::cout << i << std::endl;
 				if (i != 0)
 					oss << ' ';
 				oss << "[ ";
@@ -313,6 +315,10 @@ class Matrix {
 
 		bool existsCrossProduct(const Matrix<T>& m) {
 			return columns == m.rows;
+		}
+
+		bool isCorrupted() {
+			return columns * rows != data.size();
 		}
 
 		std::string dimensions() const {

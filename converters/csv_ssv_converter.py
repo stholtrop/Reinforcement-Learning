@@ -19,6 +19,8 @@ def csv_to_ssv(filename_from, filename_to, skip_column, normalization, end_colum
         f.write("{} {} ".format(rows, columns))
         for i in data:
             f.write(str(float(i)/normalization) + " ")
+
+
 def output_split(filename_from, filename_to, skip_column=0, end_column=1):
     data = []
     rows = 0

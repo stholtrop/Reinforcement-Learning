@@ -121,13 +121,11 @@ class NeuralNetwork : public Approximator<T> {
 			}
 			// Retrieve deltas per datapoint and add them up in nablas
 			for (size_t i = 0; i < batch_in.size(); i++) {
-				std::cout << "2" << " with i " << i << std::endl << std::flush;
 				VectorMatrix playback_data = playback(batch_in[i]);
-				std::cout << "here" << std::endl << std::flush;
 				VectorMatrix deltas = retrieve_deltas(batch_in[i], batch_out[i], playback_data);
-				std::cout << "here2" << std::endl << std::flush;
 				for (size_t j = 0; j < deltas.size(); j++) {
-						std::cout << "Updating nabla, with " << j << std::endl << std::flush;
+						std::cout << "Updating nabla, with " << j << std::endl;
+						std::cout << playback_data[i].isCorrupted() << std::endl; 
 						nabla_w[j] += (deltas[j] ^ playback_data[i].transpose()) * learning_rate_real;
 						std::cout << "Next Nabla " << j << std::endl << std::flush;
 						std::cout << deltas[j].dimensions() << std::endl << std::flush;

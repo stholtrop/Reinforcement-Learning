@@ -77,82 +77,53 @@ class NeuralNetwork : public Approximator<T> {
 			return m;
 		}
 
-
-		VectorMatrix playback(const Matrix<T> m) {
-
-			VectorMatrix backwards;
-			backwards.push_back(m);
-
-			for (auto w = weights.begin(), b = biases.begin(); w < weights.end(); w++, b++)
-				backwards.push_back(activation((*w ^ m) + *b));
-
-			return backwards;
-		}
-
-		VectorMatrix retrieve_deltas(const Matrix<T> &x, const Matrix<T> &y, const VectorMatrix &playback_data) {
-
-			Matrix<T> error_derivative = playback_data.back() - y;
-			Matrix<T> last_delta = error_derivative * derivative(weights.back() ^ playback_data.rbegin()[1]);
-			VectorMatrix deltas;
-
-			deltas.push_back(last_delta);
-
-			for (int i = weights.size() - 2; i >= 0; i--) {
-
-				Matrix<T> delta = weights[i+1].transpose() ^ deltas.back() * derivative(weights[i] ^ playback_data[i]);
-				deltas.push_back(delta);
+		void train(const VectorMatrix& data, const VectorMatrix& target, int epochs, int batchSize, T eta) {
+			for (int i = 0; i < epochs; i++) {
+				updateBatch(data, target, eta);
 			}
-
-			std::reverse(deltas.begin(), deltas.end());
-			return deltas;
 		}
 
-		std::pair<VectorMatrix, VectorMatrix> retrieve_nablas(const VectorMatrix &batch_in, const VectorMatrix &batch_out, const T learning_rate) {
-			// Learning rate per datapoint
-			T learning_rate_real = learning_rate / ((T) batch_in.size());
+		void updateBatch(const VectorMatrix& data, const VectorMatrix& target, T eta) {
 
-			VectorMatrix nabla_b;
-			VectorMatrix nabla_w;
+			VectorMatrix nabla_b, nabla_w;
+			nabla_b.reserve(biases.size());
+			nabla_w.reserve(weights.size());
 
-			// Populate nablas
-			for (size_t i = 0; i < weights.size(); i++) {
+			for (unsigned int i = 0; i < biases.size(); i++) {
 				nabla_b.push_back(Matrix<T>(biases[i].rows, biases[i].columns));
 				nabla_w.push_back(Matrix<T>(weights[i].rows, weights[i].columns));
 			}
-			// Retrieve deltas per datapoint and add them up in nablas
-			for (size_t i = 0; i < batch_in.size(); i++) {
-				VectorMatrix playback_data = playback(batch_in[i]);
-				VectorMatrix deltas = retrieve_deltas(batch_in[i], batch_out[i], playback_data);
-				for (size_t j = 0; j < deltas.size(); j++) {
-						std::cout << "Updating nabla, with " << j << std::endl;
-						std::cout << playback_data[i].isCorrupted() << std::endl; 
-						nabla_w[j] += (deltas[j] ^ playback_data[i].transpose()) * learning_rate_real;
-						std::cout << "Next Nabla " << j << std::endl << std::flush;
-						std::cout << deltas[j].dimensions() << std::endl << std::flush;
-						nabla_b[j] += deltas[j];
-				}
+
+			for (unsigned int i = 0; i < data.size(); i++) {
+				updateNablas(data[i], target[i], nabla_b, nabla_w);
 			}
-
-			return std::make_pair(nabla_w, nabla_b);
-		}
-
-
-		void update(const VectorMatrix& data, const VectorMatrix& target, const T learning_rate) {
-			auto nablas = retrieve_nablas(data, target, learning_rate);
-			VectorMatrix nabla_w = nablas.first;
-			VectorMatrix nabla_b = nablas.second;
-
-			// Update weights
-			for (size_t i = 0; i < weights.size(); i++) {
-				weights[i] -= nabla_w[i];
-				biases[i] -= nabla_b[i];
+			
+			for (unsigned int i = 0; i < biases.size(); i++) {
+				weights[i] -= (eta/data.size()) * nabla_w[i];
+				biases[i] -= (eta/data.size()) * nabla_b[i];
 			}
 		}
 
-		void train(const VectorMatrix &data, const VectorMatrix &target, const T learning_rate){
-			std::cout << "1" << std::flush;
-			for (int i = 0; i < 100; i++) {
-				update(data, target, learning_rate);
+		void updateNablas(const Matrix<T>& data, const Matrix<T>& target, VectorMatrix& nabla_b, VectorMatrix& nabla_w) {
+
+			VectorMatrix activations, results;
+			activations.reserve(weights.size() + 1);
+			activations.push_back(activation);			
+			results.reserve(weights.size());
+
+			for (unsigned int i = 0; i < biases.size(); i++) {
+				results.push_back((weights[i] ^ activations.back()) + biases[i]);
+				activations.push_back(activation(results.back()));
+			}
+			
+			Matrix<T> delta = (activations.back() - target) * derivative(results.back());
+			nabla_b.back() += delta;
+			nabla_w.back() += delta ^ activations[activations.size() - 2].transpose();
+
+			for (int i = results.size() - 2; i >= 0; i--) {
+				delta = (weights[i + 1].transpose() ^ delta) * derivative(results[i]);
+				nabla_b[i] += delta;
+				nabla_w[i] += delta ^ activations[i].transpose();
 			}
 		}
 

@@ -1,5 +1,4 @@
-#include "approx.cpp"
-#include "game.cpp"
+#include "neural-network.cpp"
 
 class QLearner {
 
@@ -7,7 +6,7 @@ class QLearner {
 	Game game;
 
 	public:
-	
+
 		Qlearner(Approximator a, Game g) : approximator(a), game(g) {}
 
 }

@@ -4,13 +4,14 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#include "approx.cpp"
 #include "activators.cpp"
 #include <functional>
 #include <utility>
+#include <numeric>
+
 
 template<typename T>
-class NeuralNetwork : public Approximator<T> {
+class NeuralNetwork {
 	using VectorMatrix = typename std::vector<Matrix<T>>;
 	private:
 
@@ -48,8 +49,22 @@ class NeuralNetwork : public Approximator<T> {
 		}
 
 		void train(const VectorMatrix& data, const VectorMatrix& target, int epochs, int batchSize, T eta) {
+			std::vector<int> indices(data.size());
+			std::iota(indices.begin(), indices.end(), 0);
 			for (int i = 0; i < epochs; i++) {
-				updateBatch(data, target, eta);
+				std::random_shuffle(indices.begin(), indices.end());
+				for (auto j = indices.begin(); j < indices.end(); j += batchSize) {
+					int size = (j + batchSize > indices.end()) ? indices.end() - j: batchSize;
+					VectorMatrix batch_data(size);
+					VectorMatrix batch_target(size);
+					std::generate(batch_data.begin(), batch_data.end(), [&, n = 0] () mutable {
+						return data[*(j + n++)];
+					});
+					std::generate(batch_target.begin(), batch_target.end(), [&, n = 0] () mutable {
+						return target[*(j + n++)];
+					});
+					updateBatch(batch_data, batch_target, eta);
+				}
 				std::cout << i << std::endl;
 			}
 		}
@@ -68,10 +83,10 @@ class NeuralNetwork : public Approximator<T> {
 			for (unsigned int i = 0; i < data.size(); i++) {
 				updateNablas(data[i], target[i], nabla_b, nabla_w);
 			}
-			
+
 			for (unsigned int i = 0; i < biases.size(); i++) {
 				weights[i] -= nabla_w[i] * (eta/data.size());
-				biases[i] -= nabla_b[i] * (eta/data.size()); 
+				biases[i] -= nabla_b[i] * (eta/data.size());
 			}
 		}
 
@@ -79,14 +94,14 @@ class NeuralNetwork : public Approximator<T> {
 
 			VectorMatrix activations, results;
 			activations.reserve(weights.size() + 1);
-			activations.push_back(data);			
+			activations.push_back(data);
 			results.reserve(weights.size());
 
 			for (unsigned int i = 0; i < biases.size(); i++) {
 				results.push_back((weights[i] ^ activations.back()) + biases[i]);
 				activations.push_back(activation(results.back()));
 			}
-			
+
 			Matrix<T> delta = (activations.back() - target) * derivative(results.back());
 			nabla_b.back() += delta;
 			nabla_w.back() += delta ^ activations[activations.size() - 2].transpose();

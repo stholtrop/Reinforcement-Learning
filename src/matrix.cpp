@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
+#include <ctime>
 
 template <typename T>
 class Matrix {
@@ -79,7 +80,7 @@ class Matrix {
 		// Random
 
 		static Matrix<T> initializeRandom(const size_t rows, const size_t columns, const T min=-1, const T max=1) {
-			std::default_random_engine generator;
+			std::default_random_engine generator(time(0));
 			std::uniform_real_distribution<T> distribution(min, max);
 			auto gen = [&distribution, &generator](){
 				return distribution(generator);
@@ -181,7 +182,7 @@ class Matrix {
 				data[i] += m[i];
 			return *this;
 		}
-		
+
 		Matrix<T>& operator+=(const T num) {
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] += num;

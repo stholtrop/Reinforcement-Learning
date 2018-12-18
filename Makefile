@@ -1,5 +1,12 @@
+CC = g++
+FLAGS = -Wall -pipe -O2 -g --std=c++17 -lm
+TEST_INCLUDES = -I./src
+TEST_FILES = $(wildcard unit_tests/src/*)
+TEST_BINS = $(foreach file, $(TEST_FILES), $(subst .cpp,, $(subst src,build, $(file))))
+all: run
+
 build/main: src/*.cpp
-	g++ -Wall -pipe -O2 -g --std=c++17 -lm src/main.cpp -o build/main
+	$(CC) $(FLAGS) src/main.cpp -o build/main
 build: build/main
 all: build
 clean:

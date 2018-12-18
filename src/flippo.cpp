@@ -26,7 +26,7 @@ public:
     board(middle_y+1, middle_x) = -1;
   }
 
-  double score() {
+  double score() const {
     double result = 0;
     for (int i = 0; i < BOARD_SIZE; i++) {
       result += board[i];
@@ -48,7 +48,7 @@ public:
   GameState state;
   int moves = 4;
 
-  void place_piece(int i, int j, double c) {
+  void place_piece(const int i, const int j, const double c) {
     state.board(i, j) = c;
     // Loop over directions
     for (int di = -1; di < 2; di++) {
@@ -62,7 +62,7 @@ public:
     moves++;
   }
 
-  void update(int i, int j, int di, int dj, double c) {
+  void update(const int i, const int j, const int di, const int dj, const double c) {
     // Update along a certain direction given by di, dj
     auto [fi, fj] = find_flip(i, j, di, dj, c);
     if (fi == i && fj == j) {
@@ -77,11 +77,27 @@ public:
     }
   }
 
-  inline bool inbound(int i, int j) {
+  std::vector<std::tuple<int, int>> get_neighbours(const int i, const int j) const {
+    std::vector<std::tuple<int, int>> neighbours;
+    for (int di = -1; di < 2; di++) {
+      for (int dj = -1; dj < 2; dj++) {
+        int ni = i + di;
+        int nj = j + dj;
+        if (inbound(ni, nj)) {
+          if (state.board(ni, nj) != 0){
+            neighbours.push_back({ni, nj});
+          }
+        }
+      }
+    }
+    return neighbours;
+  }
+
+  inline bool inbound(const int i, const int j) const {
     return (0 <= i) && (i <  BOARD_HEIGHT) && (0 <= j) && (j < BOARD_WIDTH);
   }
 
-  std::tuple<int, int> find_flip(int i, int j, int di, int dj, double c) {
+  std::tuple<int, int> find_flip(int i, int j, const int di, const int dj, const double c) const {
     // Find flip of other color along direction di, dj
     int fi = i;
     int fj = j;
@@ -99,11 +115,52 @@ public:
     return {fi, fj};
   }
 
-  double inline score() {
+  GameState potential_board(const int i, const int j, const double c) const {
+    Flippo copy(*this);
+    copy.place_piece(i, j, c);
+    return copy.state;
+  }
+
+  int valid(const int i, const int j, const double c) const {
+    if (state.board(i, j) != 0) {
+      return 0;
+    }
+    std::vector<std::tuple<int, int>> neighbours = get_neighbours(i, j);
+    if (neighbours.size() == 0) {
+      return 0;
+    }
+    for (int di = -1; di < 2; di++) {
+      for (int dj = -1; dj < 2; dj++) {
+        if (di == 0 && dj == 0) {
+          continue;
+        }
+        auto [fi, fj] = find_flip(i, j, di, dj, c);
+        std::cout << "Pairs fi, fj: " << fi << ", " << fj << " Pairs i, j: " << i << ", " << j << std::endl;
+
+        if (fi != i || fj != j) {
+          std::cout << "Found a move" << std::endl;
+          return 2;
+        }
+      }
+    }
+    return 1;
+  }
+
+  Matrix<int> valid_moves(const double c) const {
+    Matrix<int> move_matrix(BOARD_HEIGHT, BOARD_WIDTH);
+    for (int i = 0; i < BOARD_WIDTH; i++) {
+      for (int j = 0; j < BOARD_HEIGHT; j++) {
+        move_matrix(i, j) = valid(i, j, c);
+      }
+    }
+    return move_matrix;
+  }
+
+  inline double score() const {
     return state.score();
   }
 
-  bool is_final() {
+  inline bool is_final() const {
     return moves == BOARD_SIZE;
   }
 };

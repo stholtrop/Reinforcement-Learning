@@ -98,9 +98,11 @@ public:
   }
 
   std::tuple<int, int> find_flip(int i, int j, const int di, const int dj, const double c) const {
-    // Find flip of other color along direction di, dj
-    int fi = i;
-    int fj = j;
+    // Find flip of color along direction di, dj
+    i += di;
+    j += dj;
+    int fi = i + di;
+    int fj = j + dj;
     while (inbound(i, j)) {
       if (state.board(i, j) == 0) {
         break;
@@ -135,9 +137,8 @@ public:
           continue;
         }
         auto [fi, fj] = find_flip(i, j, di, dj, c);
-        std::cout << "Pairs fi, fj: " << fi << ", " << fj << " Pairs i, j: " << i << ", " << j << std::endl;
-
-        if (fi != i || fj != j) {
+        std::cout << fi << " " << fj << " " << i << " " << j << std::endl;
+        if ((fi != i || fj != j) && (fi != i + di || fj != j + dj)) {
           std::cout << "Found a move" << std::endl;
           return 2;
         }

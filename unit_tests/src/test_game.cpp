@@ -14,6 +14,6 @@ int main() {
   // GameState next = m.potential_board(4, 1, 1);
   // cout << next << endl;
   cout << "Testing valid moves" << endl;
-  Matrix<int> possible_moves = m.valid_moves(1);
+  Matrix<int> possible_moves = m.valid_moves(-1);
   cout << possible_moves << endl;
 }

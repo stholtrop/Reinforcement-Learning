@@ -6,6 +6,7 @@
 #include <tuple>
 #include "matrix.cpp"
 #include <iostream>
+#include <random>
 
 const int BOARD_WIDTH = 8;
 const int BOARD_HEIGHT = 8;
@@ -27,7 +28,9 @@ public:
 		board(middle_y+1, middle_x) = -1;
 		moves = 4;
 	}
-	
+
+  GameState(Matrix<double> b, int m = 4) : board(b), moves(m) {}
+
 	void placePiece(const int i, const int j, const double c) {
 		board(i, j) = c;
 		// Loop over directions
@@ -69,9 +72,9 @@ public:
 
 		std::vector<std::tuple<int, int>> neighbours;
 
-		for (int ni = i - 1; ni < i + 2; ni++) 
-			for (int nj = j - 1; nj < j + 2; nj++) 
-				if (inbound(ni, nj) && board(ni, nj) != 0) 
+		for (int ni = i - 1; ni < i + 2; ni++)
+			for (int nj = j - 1; nj < j + 2; nj++)
+				if (inbound(ni, nj) && board(ni, nj) != 0)
 			neighbours.push_back({ni, nj});
 
 		return neighbours;
@@ -79,10 +82,10 @@ public:
 	}
 
 	bool hasNeighbours(const int i, const int j) const {
-		
-	 for (int ni = i - 1; ni < i + 2; ni++) 
-			for (int nj = j - 1; nj < j + 2; nj++) 
-				if (inbound(ni, nj) && board(ni, nj) != 0) 
+
+	 for (int ni = i - 1; ni < i + 2; ni++)
+			for (int nj = j - 1; nj < j + 2; nj++)
+				if (inbound(ni, nj) && board(ni, nj) != 0)
 			return true;
 
 		return false;
@@ -107,10 +110,10 @@ public:
 		}
 
 		return {fi, fj};
-	
+
 	}
 
-	int valid(const int i, const int j, const double c) const {
+	int valid(const int i, const int j, const double c, bool& flip) const {
 
 		if (board(i, j) != 0) return 0;
 
@@ -122,22 +125,36 @@ public:
 
 				if (di == 0 && dj == 0) continue;
 				auto [fi, fj] = getFlip(i, j, di, dj, c);
-				if ((fi != i || fj != j) && (fi != i + di || fj != j + dj)) return 2;
-
+				if ((fi != i || fj != j) && (fi != i + di || fj != j + dj)) {
+          flip = true;
+          return 2;
+        }
 			}
 		}
 
 		return 1;
 	}
 
-	Matrix<int> validMoves(const double c) const {
+	std::vector<std::tuple<int, int>> validMoves(const double c) const {
 		Matrix<int> move_matrix(BOARD_HEIGHT, BOARD_WIDTH);
-		for (int i = 0; i < BOARD_WIDTH; i++) {
-			for (int j = 0; j < BOARD_HEIGHT; j++) {
-				move_matrix(i, j) = valid(i, j, c);
+    std::vector<std::tuple<int, int>> indices;
+    bool flip = false;
+		for (int i = 0; i < BOARD_HEIGHT; i++) {
+			for (int j = 0; j < BOARD_WIDTH; j++) {
+				move_matrix(i, j) = valid(i, j, c, flip);
 			}
 		}
-		return move_matrix;
+    if (flip) {
+      move_matrix = move_matrix.apply([] (int x) {return x >> 1;});
+    }
+    for (int i = 0; i < BOARD_HEIGHT; i++) {
+      for (int j = 0; j < BOARD_WIDTH; j++) {
+        if (move_matrix(i, j)) {
+          indices.push_back({i, j});
+        }
+      }
+    }
+		return indices;
 	}
 
 	GameState potentialBoard(const int i, const int j, const double c) const {
@@ -156,13 +173,41 @@ public:
 	std::string toString() const {
 		return board.toString();
 	}
+
+  int emptyPlaces() {
+    int result = 0;
+    for (int i = 0; i < BOARD_HEIGHT; i++)
+      for (int j = 0; j < BOARD_WIDTH; j++)
+        if (!board(i, j)) result += 1;
+    return result;
+  }
 };
 
 std::ostream& operator<<(std::ostream& os, const GameState& m) {
 	return os << m.toString();
 };
 
-class Flippo {
 
+class Flippo {
+    using VectorMatrix = std::vector<Matrix<double>>;
+    using VectorGameState = std::vector<GameState>;
+  public:
+    static VectorGameState createGame() {
+      std::default_random_engine generator(time(0));
+      VectorGameState v;
+      v.push_back(GameState());
+      double c = 1.0;
+      for (int k = 0; k < BOARD_SIZE - 4; k++) {
+        std::vector<std::tuple<int, int>> moves = v.back().validMoves(c);
+        std::uniform_int_distribution<int> distribution(0, moves.size()-1);
+        auto [i, j] = moves[distribution(generator)];
+        v.push_back(v.back().potentialBoard(i, j, c));
+        c *= -1.0;
+      }
+      std::cout << v.back() << std::endl;
+      return v;
+    }
 };
+
+
 #endif

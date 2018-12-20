@@ -25,7 +25,8 @@ class NeuralNetwork {
 		std::function<Matrix<T>(const Matrix<T>&)> derivative;
 
 	public:
-
+		NeuralNetwork() {}
+		
 		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av) {
 
 			activation = Matrix<T>::wrap([av] (const T x) { return av->function(x);});

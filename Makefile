@@ -25,5 +25,9 @@ game: unit_tests/src/test_game.cpp
 	g++ -Wall -pipe -O2 -g --std=c++17 -lm  -I./src unit_tests/src/test_game.cpp -o unit_tests/build/test_game
 test_game: game
 	./unit_tests/build/test_game
+qlearner:
+	$(CC) $(FLAGS) $(TEST_INCLUDES) unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
+qlearner_test: qlearner
+	./unit_tests/build/qlearner
 build: build/main
 .PHONY: FORCE

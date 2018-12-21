@@ -200,11 +200,10 @@ class Flippo {
 
     using VectorMatrix = std::vector<Matrix<double>>;
     using VectorGameState = std::vector<GameState>;
-	NeuralNetwork<double>* nn;
 
   public:
 
-	Flippo (NeuralNetwork<double>* n) : nn(n) {}
+	static NeuralNetwork<double>* nn;
 
     static VectorGameState createGame() {
 
@@ -224,7 +223,7 @@ class Flippo {
       return v;
     }
 
-	static Matrix<double> getTarget(GameState& s, NeuralNetwork<double>* nn) {
+	static Matrix<double> getTarget(GameState& s) {
 		if (s.isFinal())
 			return Matrix<double>(1, 1, {s.getScore()});
 
@@ -240,6 +239,8 @@ class Flippo {
 		return m;
 	}
 };
+
+NeuralNetwork<double>* Flippo::nn = nullptr;
 
 
 #endif

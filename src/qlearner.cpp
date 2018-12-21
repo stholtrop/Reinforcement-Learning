@@ -12,7 +12,9 @@ class QLearner {
 
 	public:
 
-		QLearner(NeuralNetwork<double>* a, double g) : approximator(a), gamma(g) {}
+		QLearner(NeuralNetwork<double>* a, double g) : approximator(a), gamma(g) {
+			Flippo::nn = approximator;	
+		}
 
 		void initialize(int nGames, int batchSize, double eta) {
 
@@ -29,7 +31,7 @@ class QLearner {
 					for (int k = 0; k < nGames; k++) {
 
 						data.push_back(games[k][j].input());
-						target.push_back(Flippo::getTarget(games[k][j], approximator));
+						target.push_back(Flippo::getTarget(games[k][j]));
 
 					}
 				}

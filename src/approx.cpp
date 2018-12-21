@@ -6,7 +6,8 @@
 
 template<typename T>
 class Approximator {
-	virtual Matrix<T> evaluate(Matrix<T> data) = 0;
+	public:
+		virtual Matrix<T> evaluate(Matrix<T> data) = 0;
 };
 
 #endif

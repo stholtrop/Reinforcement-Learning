@@ -6,6 +6,7 @@
 template<typename T>
 class Function {
 	public:
+		T min = -1;
 
 		virtual T function(T x) const = 0;
 		virtual T derivative(T x) const = 0;

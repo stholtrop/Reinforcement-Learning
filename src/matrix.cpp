@@ -210,7 +210,7 @@ class Matrix {
 
 		// Unary operators
 
-		Matrix<T> operator-() {
+		Matrix<T> operator-() const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = -data[i];
@@ -234,12 +234,16 @@ class Matrix {
 
 		// Transpose
 
-		Matrix<T> transpose() {
+		Matrix<T> transpose() const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows; i++)
 				for (unsigned int j = 0; j < columns; j++)
 					newData[j * rows + i] = data[i * columns + j];
 			return Matrix<T>(columns, rows, newData);
+		}
+
+		Matrix<T> reshape(const int i, const int j) const {
+			return Matrix<T>(i, j, data);
 		}
 
 		// Retrieve row or column

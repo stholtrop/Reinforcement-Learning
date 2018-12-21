@@ -24,6 +24,8 @@ class NeuralNetwork {
 		std::function<Matrix<T>(const Matrix<T>&)> activation;
 		std::function<Matrix<T>(const Matrix<T>&)> derivative;
 
+		T minimalValue;
+
 	public:
 		NeuralNetwork() {}
 		
@@ -31,6 +33,8 @@ class NeuralNetwork {
 
 			activation = Matrix<T>::wrap([av] (const T x) { return av->function(x);});
 			derivative = Matrix<T>::wrap([av] (const T x) { return av->derivative(x);});
+			minimalValue = av->min;
+
 			inputSize = sizes[0];
 			outputSize = *sizes.rbegin();
 
@@ -50,20 +54,29 @@ class NeuralNetwork {
 		}
 
 		void train(const VectorMatrix& data, const VectorMatrix& target, int epochs, int batchSize, T eta) {
+
 			std::vector<int> indices(data.size());
 			std::iota(indices.begin(), indices.end(), 0);
+
 			for (int i = 0; i < epochs; i++) {
+
 				std::random_shuffle(indices.begin(), indices.end());
+
 				for (auto j = indices.begin(); j < indices.end(); j += batchSize) {
+
 					int size = (j + batchSize > indices.end()) ? indices.end() - j: batchSize;
+
 					VectorMatrix batch_data(size);
 					VectorMatrix batch_target(size);
+
 					std::generate(batch_data.begin(), batch_data.end(), [&, n = 0] () mutable {
 						return data[*(j + n++)];
 					});
+
 					std::generate(batch_target.begin(), batch_target.end(), [&, n = 0] () mutable {
 						return target[*(j + n++)];
 					});
+
 					updateBatch(batch_data, batch_target, eta);
 				}
 				std::cout << i << std::endl;
@@ -112,6 +125,15 @@ class NeuralNetwork {
 				nabla_b[i] += delta;
 				nabla_w[i] += delta ^ activations[i].transpose();
 			}
+		}
+
+		Matrix<T> min() {
+			std::vector<T> v(outputSize);
+
+			for (unsigned int i = 0; i < v.size(); i++)
+				v[i] = minimalValue;
+
+			return Matrix<T>(1, outputSize, v);
 		}
 };
 

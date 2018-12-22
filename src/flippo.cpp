@@ -149,9 +149,9 @@ public:
 		if (flip)
 		  move_matrix = move_matrix.apply([] (int x) {return x >> 1;});
 
-		for (int i = 0; i < BOARD_HEIGHT; i++) 
-		  for (int j = 0; j < BOARD_WIDTH; j++) 
-			if (move_matrix(i, j)) 
+		for (int i = 0; i < BOARD_HEIGHT; i++)
+		  for (int j = 0; j < BOARD_WIDTH; j++)
+			if (move_matrix(i, j))
 			  indices.push_back({i, j});
 
 		return indices;
@@ -186,7 +186,7 @@ public:
     return result;
   }
 
-  int getColour() {
+  int getColour() const {
 	  return (moves % 2) ? -1 : 1;
   }
 };
@@ -222,6 +222,38 @@ class Flippo {
 
       return v;
     }
+
+	static std::tuple<int, int> predictMove(const GameState& s) {
+		int c = s.getColour();
+		Matrix<double> m = nn->min();
+		auto moves = s.validMoves(c);
+		int r = -1;
+		for (unsigned int i = 0; i < moves.size(); i++) {
+			auto [x, y] = moves[i];
+			auto p = nn->evaluate(s.potentialBoard(x, y, c).input());
+			if (c*p[0] > c*m[0]) {
+				m = p;
+				r = i;
+			}
+		}
+		return moves[r];
+	}
+
+	static int randomBenchmarker() {
+		GameState white;
+		GameState black;
+		std::cout << white << std::endl;
+		std::default_random_engine generator(time(0));
+		for (int k= 0; k < BOARD_SIZE/2-2; k++) {
+			auto [x, y] = Flippo::predictMove(white);
+			white.placePiece(x, y, 1);
+			std::vector<std::tuple<int, int>> moves = white.validMoves(-1);
+			std::uniform_int_distribution<int> distribution(0, moves.size()-1);
+			auto [i, j] = moves[distribution(generator)];
+			white.placePiece(i, j, -1);
+		}
+		return white.getScore();
+	}
 
 	static Matrix<double> getTarget(GameState& s) {
 		if (s.isFinal())

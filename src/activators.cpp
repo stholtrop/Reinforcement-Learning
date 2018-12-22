@@ -16,6 +16,8 @@ template<typename T>
 class Linear : public Function<T> {
 	public:
 
+		T min = -10000000;
+
 		T function(const T x) const {
 			return x;
 		}
@@ -69,7 +71,7 @@ class LeakyRELU : public Function<T> {
 	public:
 
 		T function(const T x) const {
-			return x > 0 ? x : 0.1 * x;			
+			return x > 0 ? x : 0.1 * x;
 		}
 
 		T derivative(const T x) const {

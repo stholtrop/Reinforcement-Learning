@@ -2,3 +2,4 @@ build/*
 *.swp
 data/*
 unit_tests/build/*
+.vscode

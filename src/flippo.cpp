@@ -166,7 +166,7 @@ public:
 	}
 
 	Matrix<double> input() {
-		return board.reshape(1, BOARD_SIZE);
+		return board.reshape(BOARD_SIZE, 1);
 	}
 
 	inline bool isFinal() const {
@@ -239,20 +239,43 @@ class Flippo {
 		return moves[r];
 	}
 
-	static int randomBenchmarker() {
+	static std::tuple<int, int> randomBenchmarkerSingle() {
 		GameState white;
 		GameState black;
-		std::cout << white << std::endl;
 		std::default_random_engine generator(time(0));
 		for (int k= 0; k < BOARD_SIZE/2-2; k++) {
-			auto [x, y] = Flippo::predictMove(white);
-			white.placePiece(x, y, 1);
-			std::vector<std::tuple<int, int>> moves = white.validMoves(-1);
-			std::uniform_int_distribution<int> distribution(0, moves.size()-1);
-			auto [i, j] = moves[distribution(generator)];
-			white.placePiece(i, j, -1);
+			// White AI
+			auto [x1, y1] = Flippo::predictMove(white);
+			white.placePiece(x1, y1, 1);
+			// White Random
+			std::vector<std::tuple<int, int>> moves1 = white.validMoves(-1);
+			std::uniform_int_distribution<int> distribution1(0, moves1.size()-1);
+			auto [i1, j1] = moves1[distribution1(generator)];
+			white.placePiece(i1, j1, -1);
+			// Black Random
+			std::vector<std::tuple<int, int>> moves2 = black.validMoves(1);
+			std::uniform_int_distribution<int> distribution2(0, moves2.size()-1);
+			auto [i2, j2] = moves2[distribution2(generator)];
+			black.placePiece(i2, j2, 1);
+			// Black AI
+			auto [x2, y2] = Flippo::predictMove(black);
+			black.placePiece(x2, y2, -1);
 		}
-		return white.getScore();
+		int whiteScore = white.getScore();
+		int blackScore = black.getScore() * -1;
+		int wins = (whiteScore > 0 ? 1 : 0) + (blackScore > 0 ? 1 : 0);
+		return {(whiteScore + blackScore), wins};
+	}
+
+	static std::tuple<double, double> randomBenchmarker(int n = 10) {
+		int result = 0;
+		int wins = 0;
+		for (int i = 0; i < n; i++) {
+			auto [score, win] = randomBenchmarkerSingle();
+			result += score;
+			wins += win;
+		}
+		return {(double)result / ((double)n * 2), (double)wins/((double)n * 2) * 100};
 	}
 
 	static Matrix<double> getTarget(GameState& s) {

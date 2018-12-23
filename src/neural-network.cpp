@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 #include <numeric>
+#include <random>
 
 
 template<typename T>
@@ -59,14 +60,19 @@ class NeuralNetwork {
 			return m;
 		}
 
-		void train(const VectorMatrix& data, const VectorMatrix& target, int epochs, int batchSize, T eta) {
+		void train(const VectorMatrix& data, const VectorMatrix& target, int epochs, int batchSize, T eta, bool verbose = false) {
 
 			std::vector<int> indices(data.size());
 			std::iota(indices.begin(), indices.end(), 0);
+			std::default_random_engine generator(time(0));
 
 			for (int i = 0; i < epochs; i++) {
 
-				std::random_shuffle(indices.begin(), indices.end());
+				if (verbose) {
+					std::cout << "At epoch " << i+1 << " of " << epochs << std::endl;
+				}
+
+				std::shuffle(indices.begin(), indices.end(), generator);
 
 				for (auto j = indices.begin(); j < indices.end(); j += batchSize) {
 
@@ -85,7 +91,6 @@ class NeuralNetwork {
 
 					updateBatch(batch_data, batch_target, eta);
 				}
-				std::cout << i << std::endl;
 			}
 		}
 

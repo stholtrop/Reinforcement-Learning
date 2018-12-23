@@ -16,7 +16,7 @@ class QLearner {
 			Flippo::nn = approximator;	
 		}
 
-		void initialize(int nGames, int batchSize, double eta) {
+		void initialize(int nGames, int batchSize, double eta, bool verbose = false) {
 
 			std::vector<VectorGameState> games(nGames);
 			std::generate(games.begin(), games.end(), Flippo::createGame);
@@ -35,8 +35,10 @@ class QLearner {
 
 					}
 				}
-
-				approximator->train(data, target, 1, batchSize, eta);
+				if (verbose) {
+					std::cout << "Training " << i+1 << " of " << games[0].size() << std::endl;
+				}
+				approximator->train(data, target, 1, batchSize, eta, verbose);
 
 			}
 

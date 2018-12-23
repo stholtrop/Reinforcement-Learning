@@ -26,7 +26,7 @@ game: unit_tests/src/test_game.cpp
 test_game: game
 	./unit_tests/build/test_game
 qlearner:
-	$(CC) $(FLAGS) $(TEST_INCLUDES) unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
+	g++ -Wall -pipe -fno-inline-functions --std=c++17 -lm -g -I./src unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
 qlearner_test: qlearner
 	./unit_tests/build/qlearner
 build: build/main

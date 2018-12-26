@@ -9,6 +9,8 @@
 #include <utility>
 #include <numeric>
 #include <random>
+#include <fstream>
+#include <string>
 
 
 template<typename T>
@@ -146,6 +148,69 @@ class NeuralNetwork {
 
 			return Matrix<T>(1, outputSize, v);
 		}
+	
+	void saveNetwork(const std::string &filename) const {
+		/*
+		* Save file layout:
+		* inputSize, outputSize
+		* numLayers
+		* weights, biases
+		* File extension: .ssvn
+		*/
+		std::ofstream file;
+		try {
+			file.open(filename);
+		} catch (const std::ofstream::failure &e) {
+			std::cerr << "Error reading file" << std::endl;
+			throw "Error writing file";
+		}
+		file << inputSize << " " << outputSize << " ";
+		file << weights.size() << " ";
+		for (auto w : weights) {
+			w.writeToFile(file);
+		}
+		for (auto b : biases) {
+			b.writeToFile(file);
+		}
+		file.close();
+	}
+
+	void readNetwork(const std::string &filename, const Function<T>* av, const Function<T>* f) {
+		std::ifstream file;
+		try {
+			file.open(filename);
+		} catch (const std::ifstream::failure &e) {
+			std::cerr << "Error reading file" << std::endl;
+			throw "Error reading file";
+		}
+
+		// Initialize weights and biases
+		int numLayers;
+		file >> inputSize >> outputSize >> numLayers;
+		for (int i = 0; i < numLayers; i++) {
+			Matrix<T> temp;
+			temp = Matrix<T>::readFromFile(file);
+			weights.push_back(temp);
+		}
+		// Get sizes from biases
+		std::vector<size_t> sizes;
+		sizes.push_back(inputSize);
+		for (int j = 0; j < numLayers; j++) {
+			Matrix<T> temp;
+			temp = Matrix<T>::readFromFile(file);
+			biases.push_back(temp);
+			sizes.push_back(temp.rows);
+		}
+		// Initialize activations and derivatives
+		for (unsigned int i = 0; i < sizes.size() - 2; i++) {
+			activations.push_back(Matrix<T>::wrap([av] (const T x) { return av->function(x);}));
+			derivatives.push_back(Matrix<T>::wrap([av] (const T x) { return av->derivative(x);}));
+		}
+		activations.push_back(Matrix<T>::wrap([f] (const T x) { return f->function(x);}));
+		derivatives.push_back(Matrix<T>::wrap([f] (const T x) { return f->derivative(x);}));
+
+		file.close();
+	}
 };
 
 #endif

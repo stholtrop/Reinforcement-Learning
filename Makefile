@@ -26,8 +26,12 @@ game: unit_tests/src/test_game.cpp
 test_game: game
 	./unit_tests/build/test_game
 qlearner:
-	g++ -Wall -pipe -fno-inline-functions --std=c++17 -lm -g -I./src unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
+	g++ -Wall -pipe -Og -g --std=c++17 -lm -I./src unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
 qlearner_test: qlearner
 	./unit_tests/build/qlearner
+nn:
+	g++ -Wall -pipe -Og -g --std=c++17 -lm -I./src unit_tests/src/test_neural.cpp -o unit_tests/build/nn
+nn_test: nn
+	./unit_tests/build/nn
 build: build/main
 .PHONY: FORCE

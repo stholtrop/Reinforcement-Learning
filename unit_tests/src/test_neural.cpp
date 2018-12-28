@@ -10,6 +10,6 @@ int main() {
     cout << nn.evaluate(Matrix<double>(1, 1, {1})) << endl;
     nn.saveNetwork("test.ssvn");
     NeuralNetwork<double> nn2;
-    nn2.readNetwork("test.ssvn", new Sigmoid<double>(), new Linear<double>());
+    nn2.readNetwork("test.ssvn");
     cout << nn2.evaluate(Matrix<double>(1, 1, {1})) << endl;
 }

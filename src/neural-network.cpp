@@ -24,6 +24,9 @@ class NeuralNetwork {
 		size_t inputSize;
 		size_t outputSize;
 
+		const Function<T>* activationFunction;
+		const Function<T>* finalFunction;
+
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> activations;
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> derivatives;
 
@@ -33,6 +36,9 @@ class NeuralNetwork {
 		NeuralNetwork() {}
 		
 		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f) {
+
+			activationFunction = av;
+			finalFunction = f;
 			
 			for (unsigned int i = 0; i < sizes.size() - 2; i++) {
 				activations.push_back(Matrix<T>::wrap([av] (const T x) { return av->function(x);}));
@@ -152,9 +158,11 @@ class NeuralNetwork {
 	void saveNetwork(const std::string &filename) const {
 		/*
 		* Save file layout:
+		* Magic: SSVN
 		* inputSize, outputSize
 		* numLayers
 		* weights, biases
+		* avID, fID
 		* File extension: .ssvn
 		*/
 		std::ofstream file;
@@ -164,18 +172,24 @@ class NeuralNetwork {
 			std::cerr << "Error reading file" << std::endl;
 			throw "Error writing file";
 		}
+
+		file << "SSVN ";
 		file << inputSize << " " << outputSize << " ";
+
 		file << weights.size() << " ";
 		for (auto w : weights) {
 			w.writeToFile(file);
 		}
+
 		for (auto b : biases) {
 			b.writeToFile(file);
 		}
+
+		file << activationFunction->getID() << " " << finalFunction->getID();
 		file.close();
 	}
 
-	void readNetwork(const std::string &filename, const Function<T>* av, const Function<T>* f) {
+	void readNetwork(const std::string &filename) {
 		std::ifstream file;
 		try {
 			file.open(filename);
@@ -183,6 +197,9 @@ class NeuralNetwork {
 			std::cerr << "Error reading file" << std::endl;
 			throw "Error reading file";
 		}
+
+		// Ignore magic SSVN
+		file.ignore(4, ' ');
 
 		// Initialize weights and biases
 		int numLayers;
@@ -192,6 +209,7 @@ class NeuralNetwork {
 			temp = Matrix<T>::readFromFile(file);
 			weights.push_back(temp);
 		}
+
 		// Get sizes from biases
 		std::vector<size_t> sizes;
 		sizes.push_back(inputSize);
@@ -201,7 +219,15 @@ class NeuralNetwork {
 			biases.push_back(temp);
 			sizes.push_back(temp.rows);
 		}
+
 		// Initialize activations and derivatives
+		int aID, fID;
+		file >> aID >> fID;
+		Function<T>* av = getFunctionFromID(aID);
+		Function<T>* f  = getFunctionFromID(fID);
+		activationFunction = av;
+		finalFunction = f;
+
 		for (unsigned int i = 0; i < sizes.size() - 2; i++) {
 			activations.push_back(Matrix<T>::wrap([av] (const T x) { return av->function(x);}));
 			derivatives.push_back(Matrix<T>::wrap([av] (const T x) { return av->derivative(x);}));
@@ -210,6 +236,19 @@ class NeuralNetwork {
 		derivatives.push_back(Matrix<T>::wrap([f] (const T x) { return f->derivative(x);}));
 
 		file.close();
+	}
+
+	static Function<T>* getFunctionFromID(const int ID, const T extra = 0) {
+		// This function has to be put here, as the templates can now be matched
+		switch (ID) {
+			case 1: return new Linear<T>();
+			case 2: return new Sigmoid<T>();
+			case 3: return new TanH<T>();
+			case 4: return new RELU<T>();
+			case 5: return new LeakyRELU<T>();
+			case 6: return new ELU<T>(extra);
+			default: return new Linear<T>();
+		}
 	}
 };
 

@@ -10,6 +10,7 @@ class Function {
 
 		virtual T function(const T x) const = 0;
 		virtual T derivative(const T x) const = 0;
+		virtual int getID() const = 0;
 };
 
 template<typename T>
@@ -25,6 +26,8 @@ class Linear : public Function<T> {
 		T derivative(const T x) const {
 			return 1;
 		}
+
+		int getID() const {return 1;};
 };
 
 template<typename T>
@@ -38,6 +41,8 @@ class Sigmoid : public Function<T> {
 		T derivative(const T x) const {
 			return function(x) * (1 - function(x));
 		}
+
+		int getID() const {return 2;};
 };
 
 template<typename T>
@@ -51,6 +56,8 @@ class TanH : public Function<T> {
 		T derivative(const T x) const {
 			return 1 - function(x)*function(x);
 		}
+
+		int getID() const {return 3;};
 };
 
 template<typename T>
@@ -64,6 +71,8 @@ class RELU : public Function<T> {
 		T derivative(const T x) const {
 			return x > 0 ? 1 : 0;
 		}
+
+		int getID() const {return 4;};
 };
 
 template<typename T>
@@ -77,6 +86,8 @@ class LeakyRELU : public Function<T> {
 		T derivative(const T x) const {
 			return x > 0 ? 1 : 0.1;
 		}
+
+		int getID() const {return 5;};
 };
 
 template<typename T>
@@ -96,6 +107,8 @@ class ELU : public Function<T> {
 		T derivative(const T x) const {
 			return x > 0 ? 1 : a * std::exp(x);
 		}
+
+		int getID() const {return 6;};
 };
 
 #endif

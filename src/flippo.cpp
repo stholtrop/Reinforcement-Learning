@@ -198,72 +198,92 @@ std::ostream& operator<<(std::ostream& os, const GameState& m) {
 
 class Flippo {
 
+  private:
+
     using VectorMatrix = std::vector<Matrix<double>>;
     using VectorGameState = std::vector<GameState>;
 
+	static NeuralNetwork<double>* nn;
+	static std::default_random_engine generator;
+
   public:
 
-	static NeuralNetwork<double>* nn;
+	static void initialise(NeuralNetwork<double>* p) {
+		nn = p;
+	}
 
     static VectorGameState createGame() {
 
-      std::default_random_engine generator(time(0));
       VectorGameState v;
       v.push_back(GameState());
       double c = 1.0;
 
       for (int k = 0; k < BOARD_SIZE - 4; k++) {
+		  
         std::vector<std::tuple<int, int>> moves = v.back().validMoves(c);
         std::uniform_int_distribution<int> distribution(0, moves.size()-1);
         auto [i, j] = moves[distribution(generator)];
         v.push_back(v.back().potentialBoard(i, j, c));
         c *= -1.0;
+
       }
 
       return v;
     }
 
 	static std::tuple<int, int> predictMove(const GameState& s) {
+
 		int c = s.getColour();
-		Matrix<double> m = nn->min();
+		double m = nn->min();
 		auto moves = s.validMoves(c);
 		int r = -1;
+
 		for (unsigned int i = 0; i < moves.size(); i++) {
+
 			auto [x, y] = moves[i];
 			auto p = nn->evaluate(s.potentialBoard(x, y, c).input());
-			if (c*p[0] > c*m[0]) {
-				m = p;
+
+			if (c*p[0] > m) {
+				m = p[0];
 				r = i;
 			}
 		}
+
 		return moves[r];
 	}
 
 	static std::tuple<int, int> randomBenchmarkerSingle() {
+
 		GameState white;
 		GameState black;
-		std::default_random_engine generator(time(0));
+
 		for (int k= 0; k < BOARD_SIZE/2-2; k++) {
+
 			// White AI
 			auto [x1, y1] = Flippo::predictMove(white);
 			white.placePiece(x1, y1, 1);
+
 			// White Random
 			std::vector<std::tuple<int, int>> moves1 = white.validMoves(-1);
 			std::uniform_int_distribution<int> distribution1(0, moves1.size()-1);
 			auto [i1, j1] = moves1[distribution1(generator)];
 			white.placePiece(i1, j1, -1);
+
 			// Black Random
 			std::vector<std::tuple<int, int>> moves2 = black.validMoves(1);
 			std::uniform_int_distribution<int> distribution2(0, moves2.size()-1);
 			auto [i2, j2] = moves2[distribution2(generator)];
 			black.placePiece(i2, j2, 1);
+
 			// Black AI
 			auto [x2, y2] = Flippo::predictMove(black);
 			black.placePiece(x2, y2, -1);
 		}
+
 		int whiteScore = white.getScore();
 		int blackScore = black.getScore() * -1;
 		int wins = (whiteScore > 0 ? 1 : 0) + (blackScore > 0 ? 1 : 0);
+
 		return {(whiteScore + blackScore), wins};
 	}
 
@@ -283,19 +303,20 @@ class Flippo {
 			return Matrix<double>(1, 1, {s.getScore()});
 
 		int c = s.getColour();
-		Matrix<double> m = nn->min();
+		double m = nn->min();
 
 		for (auto [i, j] : s.validMoves(c)) {
 			auto p = nn->evaluate(s.potentialBoard(i, j, c).input());
-			if (c*p[0] > c*m[0])
-				m = p;
+			if (c*p[0] > m)
+				m = p[0];
 		}
 
-		return m;
+		return Matrix(1, 1, std::vector<double>{m});
 	}
 };
 
 NeuralNetwork<double>* Flippo::nn = nullptr;
+std::default_random_engine Flippo::generator = std::default_random_engine(time(0));
 
 
 #endif

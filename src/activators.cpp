@@ -2,22 +2,25 @@
 #define ACTIVATORS
 #include <functional>
 #include <cmath>
+#include <limits>
 
 template<typename T>
 class Function {
 	public:
-		T min = -1;
+		T min;
 
+		Function<T>(T m=-1) : min(m) {}
 		virtual T function(const T x) const = 0;
 		virtual T derivative(const T x) const = 0;
 		virtual int getID() const = 0;
+		virtual ~Function() {}
 };
 
 template<typename T>
 class Linear : public Function<T> {
 	public:
 
-		T min = -10000000;
+		Linear<T>() : Function<T>(-std::numeric_limits<T>::max()) {}
 
 		T function(const T x) const {
 			return x;
@@ -28,6 +31,8 @@ class Linear : public Function<T> {
 		}
 
 		int getID() const {return 1;};
+
+		~Linear() {}
 };
 
 template<typename T>
@@ -43,6 +48,8 @@ class Sigmoid : public Function<T> {
 		}
 
 		int getID() const {return 2;};
+
+		~Sigmoid() {}
 };
 
 template<typename T>
@@ -58,6 +65,8 @@ class TanH : public Function<T> {
 		}
 
 		int getID() const {return 3;};
+
+		~TanH() {}
 };
 
 template<typename T>
@@ -73,6 +82,8 @@ class RELU : public Function<T> {
 		}
 
 		int getID() const {return 4;};
+
+		~RELU() {}
 };
 
 template<typename T>
@@ -88,6 +99,8 @@ class LeakyRELU : public Function<T> {
 		}
 
 		int getID() const {return 5;};
+
+		~LeakyRELU() {}
 };
 
 template<typename T>
@@ -109,6 +122,8 @@ class ELU : public Function<T> {
 		}
 
 		int getID() const {return 6;};
+
+		~ELU() {}
 };
 
 #endif

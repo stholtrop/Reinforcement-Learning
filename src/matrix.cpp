@@ -9,6 +9,7 @@
 #include <functional>
 #include <fstream>
 #include <ctime>
+#include <assert.h>
 
 template <typename T>
 class Matrix {
@@ -28,9 +29,13 @@ class Matrix {
 		// Constructors
 		// Empty constructor
 		Matrix() {}
+
 		// Initializers
-  	Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
-		Matrix(const size_t x, const size_t y, std::vector<T> contents) : data(contents), rows(x), columns(y) {}
+  		Matrix(const size_t x, const size_t y) : data(x * y), rows(x), columns(y) {}
+
+		Matrix(const size_t x, const size_t y, std::vector<T> contents) : data(contents), rows(x), columns(y) {
+			assert(!isCorrupted());
+		}
 
 		// Matrix read and write
 		static Matrix<T> readFromFile(const std::string &filename) {
@@ -112,6 +117,7 @@ class Matrix {
 
 		// Cross product
 		Matrix<T> operator^(const Matrix<T>& m) const {
+			assert(existsCrossProduct(m));
 			std::vector<T> newData(rows * m.columns);
 			for (unsigned int i = 0; i < rows * m.columns; i++) {
 				int x = i / m.columns;
@@ -124,11 +130,13 @@ class Matrix {
 
 		// Hadamard product
 		Matrix<T> operator*(const Matrix<T>& m) const {
+			assert(isSameSize(m));
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] * m.data[i];
 			return Matrix<T>(rows, columns, newData);
 		}
+
 		Matrix<T> operator*(const T num) const {
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
@@ -137,6 +145,7 @@ class Matrix {
 		}
 
 		Matrix<T> operator+(const Matrix<T>& m) const {
+			assert(isSameSize(m));
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] + m.data[i];
@@ -151,6 +160,7 @@ class Matrix {
 		}
 
 		Matrix<T> operator-(const Matrix<T>& m) const {
+			assert(isSameSize(m));
 			std::vector<T> newData(rows * columns);
 			for (unsigned int i = 0; i < rows * columns; i++)
 				newData[i] = data[i] - m.data[i];
@@ -166,6 +176,7 @@ class Matrix {
 
 
 		Matrix<T>& operator*=(const Matrix<T>& m) {
+			assert(isSameSize(m));
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] *= m[i];
 			return *this;
@@ -178,6 +189,7 @@ class Matrix {
 		}
 
 		Matrix<T>& operator+=(const Matrix<T>& m) {
+			assert(isSameSize(m));
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] += m[i];
 			return *this;
@@ -190,6 +202,7 @@ class Matrix {
 		}
 
 		Matrix<T>& operator-=(const Matrix<T>& m) {
+			assert(isSameSize(m));
 			for (unsigned int i = 0; i < rows * columns; i++)
 				data[i] -= m[i];
 			return *this;
@@ -205,6 +218,7 @@ class Matrix {
 			columns = m.columns;
 			rows = m.rows;
 			data = m.data;
+			assert(!isCorrupted());
 		}
 
 
@@ -248,7 +262,7 @@ class Matrix {
 
 		// Retrieve row or column
 
-		Matrix<T> getRow(const unsigned int index) {
+		Matrix<T> getRow(const unsigned int index) const {
 			// Index is nth row
 			if (index > rows-1) {
 				return Matrix<T>();
@@ -260,7 +274,7 @@ class Matrix {
 			return Matrix<T>(1, columns, newData);
 		}
 
-		Matrix<T> getColumn(const unsigned int index) {
+		Matrix<T> getColumn(const unsigned int index) const {
 			// Index is nth column
 			std::vector<T> newData;
 			for (unsigned int i = index; i < columns*rows; i += columns) {
@@ -288,15 +302,15 @@ class Matrix {
 			return oss.str();
 		}
 
-		bool isSameSize(const Matrix<T>& m) {
+		inline bool isSameSize(const Matrix<T>& m) const {
 			return rows == m.rows && columns == m.columns;
 		}
 
-		bool existsCrossProduct(const Matrix<T>& m) {
+		inline bool existsCrossProduct(const Matrix<T>& m) const {
 			return columns == m.rows;
 		}
 
-		bool isCorrupted() {
+		inline bool isCorrupted() const {
 			return columns * rows != data.size();
 		}
 

@@ -48,7 +48,7 @@ class NeuralNetwork {
 			activations.push_back(Matrix<T>::wrap([f] (const T x) { return f->function(x);}));
 			derivatives.push_back(Matrix<T>::wrap([f] (const T x) { return f->derivative(x);}));
 
-			minimalValue = av->min;
+			minimalValue = f->min;
 
 			inputSize = sizes[0];
 			outputSize = *sizes.rbegin();
@@ -146,13 +146,8 @@ class NeuralNetwork {
 			}
 		}
 
-		Matrix<T> min() {
-			std::vector<T> v(outputSize);
-
-			for (unsigned int i = 0; i < v.size(); i++)
-				v[i] = minimalValue;
-
-			return Matrix<T>(1, outputSize, v);
+		T min() {
+			return minimalValue;
 		}
 	
 	void saveNetwork(const std::string &filename) const {

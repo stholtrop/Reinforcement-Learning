@@ -13,7 +13,7 @@ class QLearner {
 	public:
 
 		QLearner(NeuralNetwork<double>* a, double g) : approximator(a), gamma(g) {
-			Flippo::nn = approximator;	
+			Flippo::initialise(approximator);
 		}
 
 		void initialize(int nGames, int batchSize, double eta, bool verbose = false) {
@@ -22,7 +22,7 @@ class QLearner {
 			std::generate(games.begin(), games.end(), Flippo::createGame);
 
 			for (unsigned int i = 0; i < games[0].size(); i++) {
-
+				
 				VectorMatrix data, target;
 				data.reserve(nGames * (i + 1));
 				target.reserve(nGames * (i + 1));
@@ -35,10 +35,12 @@ class QLearner {
 
 					}
 				}
+
 				if (verbose) {
 					std::cout << "Training " << i+1 << " of " << games[0].size() << std::endl;
 				}
-				approximator->train(data, target, 1, batchSize, eta, verbose);
+
+				approximator->train(data, target, 1, batchSize, eta);
 
 			}
 

@@ -12,4 +12,6 @@ int main() {
     NeuralNetwork<double> nn2;
     nn2.readNetwork("test.ssvn");
     cout << nn2.evaluate(Matrix<double>(1, 1, {1})) << endl;
+    NeuralNetwork<double> nn3("test.ssvn");
+    cout << nn3.evaluate(Matrix<double>(1, 1, {1})) << endl;
 }

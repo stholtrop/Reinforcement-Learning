@@ -34,12 +34,17 @@ class NeuralNetwork {
 
 	public:
 		NeuralNetwork() {}
-		
+
+		NeuralNetwork(const std::string &filename) {
+			std::cout << "Initializing from filename" << std::endl;
+			readNetwork(filename);
+		}
+
 		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f) {
 
 			activationFunction = av;
 			finalFunction = f;
-			
+
 			for (unsigned int i = 0; i < sizes.size() - 2; i++) {
 				activations.push_back(Matrix<T>::wrap([av] (const T x) { return av->function(x);}));
 				derivatives.push_back(Matrix<T>::wrap([av] (const T x) { return av->derivative(x);}));
@@ -149,7 +154,7 @@ class NeuralNetwork {
 		T min() {
 			return minimalValue;
 		}
-	
+
 	void saveNetwork(const std::string &filename) const {
 		/*
 		* Save file layout:

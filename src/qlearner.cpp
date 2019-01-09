@@ -2,6 +2,7 @@
 #define QLEARNER
 #include "neural-network.cpp"
 #include "flippo.cpp"
+#include <string>
 
 class QLearner {
 
@@ -16,13 +17,18 @@ class QLearner {
 			Flippo::initialise(approximator);
 		}
 
+		QLearner(const std::string &filename, double g) {
+			approximator = new NeuralNetwork<double>(filename);
+			gamma = g;
+		}
+
 		void initialize(int nGames, int batchSize, double eta, bool verbose = false) {
 
 			std::vector<VectorGameState> games(nGames);
 			std::generate(games.begin(), games.end(), Flippo::createGame);
 
 			for (unsigned int i = 0; i < games[0].size(); i++) {
-				
+
 				VectorMatrix data, target;
 				data.reserve(nGames * (i + 1));
 				target.reserve(nGames * (i + 1));
@@ -48,6 +54,10 @@ class QLearner {
 
 		void replayTrain(bool verbose = false) {
 
+		}
+
+		void save(const std::string &filename) {
+			approximator->saveNetwork(filename);
 		}
 };
 #endif

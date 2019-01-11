@@ -126,9 +126,9 @@ public:
 				if (di == 0 && dj == 0) continue;
 				auto [fi, fj] = getFlip(i, j, di, dj, c);
 				if ((fi != i || fj != j) && (fi != i + di || fj != j + dj)) {
-          flip = true;
-          return 2;
-        }
+				  flip = true;
+				  return 2;
+				}
 			}
 		}
 
@@ -166,7 +166,7 @@ public:
 	}
 
 	Matrix<double> input() {
-		return board.reshape(BOARD_SIZE, 1);
+		return board.reshape(BOARD_SIZE, 1) * getColour() * -1;
 	}
 
 	inline bool isFinal() const {
@@ -243,7 +243,7 @@ class Flippo {
 			auto [x, y] = moves[i];
 			auto p = nn->evaluate(s.potentialBoard(x, y, c).input());
 
-			if (c*p[0] > m) {
+			if (p[0] > m) {
 				m = p[0];
 				r = i;
 			}
@@ -300,14 +300,14 @@ class Flippo {
 
 	static Matrix<double> getTarget(GameState& s) {
 		if (s.isFinal())
-			return Matrix<double>(1, 1, {s.getScore()});
+			return Matrix<double>(1, 1, {-s.getScore()});
 
 		int c = s.getColour();
 		double m = nn->min();
 
 		for (auto [i, j] : s.validMoves(c)) {
 			auto p = nn->evaluate(s.potentialBoard(i, j, c).input());
-			if (c*p[0] > m)
+			if (p[0] > m)
 				m = p[0];
 		}
 

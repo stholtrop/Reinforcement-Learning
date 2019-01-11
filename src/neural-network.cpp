@@ -245,6 +245,14 @@ class NeuralNetwork {
 			default: return new Linear<T>();
 		}
 	}
+
+	void printNetwork() {
+
+		for (unsigned int i = 0; i < weights.size(); i++) {
+			std::cout << weights[i] << std::endl << biases[i] << std::endl;
+		}
+
+	}
 };
 
 #endif

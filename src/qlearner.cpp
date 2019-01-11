@@ -20,20 +20,14 @@ class QLearner {
 
 			std::vector<VectorGameState> games(nGames);
 			std::generate(games.begin(), games.end(), Flippo::createGame);
+			VectorMatrix data, target;
 
 			for (unsigned int i = 0; i < games[0].size(); i++) {
-				
-				VectorMatrix data, target;
-				data.reserve(nGames * (i + 1));
-				target.reserve(nGames * (i + 1));
+				for (int k = 0; k < nGames; k++) {
 
-				for (int j = games[0].size() - i - 1; j >= 0; j--) {
-					for (int k = 0; k < nGames; k++) {
+					data.push_back(games[k][games[0].size() - i - 1].input());
+					target.push_back(Flippo::getTarget(games[k][games[0].size() - 1 - i]));
 
-						data.push_back(games[k][j].input());
-						target.push_back(Flippo::getTarget(games[k][j]));
-
-					}
 				}
 
 				if (verbose) {

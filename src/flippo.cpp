@@ -29,7 +29,7 @@ public:
 		moves = 4;
 	}
 
-  GameState(Matrix<double> b, int m = 4) : board(b), moves(m) {}
+	GameState(Matrix<double> b, int m = 4) : board(b), moves(m) {}
 
 	void placePiece(const int i, const int j, const double c) {
 		board(i, j) = c;
@@ -126,8 +126,8 @@ public:
 				if (di == 0 && dj == 0) continue;
 				auto [fi, fj] = getFlip(i, j, di, dj, c);
 				if ((fi != i || fj != j) && (fi != i + di || fj != j + dj)) {
-				  flip = true;
-				  return 2;
+					flip = true;
+					return 2;
 				}
 			}
 		}
@@ -138,8 +138,8 @@ public:
 	std::vector<std::tuple<int, int>> validMoves(const double c) const {
 
 		Matrix<int> move_matrix(BOARD_HEIGHT, BOARD_WIDTH);
-    	std::vector<std::tuple<int, int>> indices;
-   		bool flip = false;
+			std::vector<std::tuple<int, int>> indices;
+	 		bool flip = false;
 		for (int i = 0; i < BOARD_HEIGHT; i++) {
 			for (int j = 0; j < BOARD_WIDTH; j++) {
 				move_matrix(i, j) = valid(i, j, c, flip);
@@ -147,12 +147,12 @@ public:
 		}
 
 		if (flip)
-		  move_matrix = move_matrix.apply([] (int x) {return x >> 1;});
+			move_matrix = move_matrix.apply([] (int x) {return x >> 1;});
 
 		for (int i = 0; i < BOARD_HEIGHT; i++)
-		  for (int j = 0; j < BOARD_WIDTH; j++)
+			for (int j = 0; j < BOARD_WIDTH; j++)
 			if (move_matrix(i, j))
-			  indices.push_back({i, j});
+				indices.push_back({i, j});
 
 		return indices;
 	}
@@ -166,7 +166,7 @@ public:
 	}
 
 	Matrix<double> input() {
-		return board.reshape(BOARD_SIZE, 1) * getColour() * -1;
+		return board.reshape(BOARD_SIZE, 1);
 	}
 
 	inline bool isFinal() const {
@@ -178,17 +178,17 @@ public:
 		return board.toString();
 	}
 
-  int emptyPlaces() {
-    int result = 0;
-    for (int i = 0; i < BOARD_HEIGHT; i++)
-      for (int j = 0; j < BOARD_WIDTH; j++)
-        if (!board(i, j)) result += 1;
-    return result;
-  }
+	int emptyPlaces() {
+		int result = 0;
+		for (int i = 0; i < BOARD_HEIGHT; i++)
+			for (int j = 0; j < BOARD_WIDTH; j++)
+				if (!board(i, j)) result += 1;
+		return result;
+	}
 
-  int getColour() const {
-	  return (moves % 2) ? -1 : 1;
-  }
+	int getColour() const {
+		return (moves % 2) ? -1 : 1;
+	}
 };
 
 std::ostream& operator<<(std::ostream& os, const GameState& m) {
@@ -198,38 +198,45 @@ std::ostream& operator<<(std::ostream& os, const GameState& m) {
 
 class Flippo {
 
-  private:
+	private:
 
-    using VectorMatrix = std::vector<Matrix<double>>;
-    using VectorGameState = std::vector<GameState>;
+		using VectorMatrix = std::vector<Matrix<double>>;
+		using VectorGameState = std::vector<GameState>;
 
 	static NeuralNetwork<double>* nn;
 	static std::default_random_engine generator;
 
-  public:
+	public:
 
 	static void initialise(NeuralNetwork<double>* p) {
 		nn = p;
 	}
 
-    static VectorGameState createGame() {
+	static VectorGameState createGame(double epsilon) {
 
-      VectorGameState v;
-      v.push_back(GameState());
-      double c = 1.0;
+		VectorGameState v;
+		v.push_back(GameState());
+		double c = 1.0;
+		std::uniform_real_distribution<double> randDouble(0.0, 1.0);
 
-      for (int k = 0; k < BOARD_SIZE - 4; k++) {
-		  
-        std::vector<std::tuple<int, int>> moves = v.back().validMoves(c);
-        std::uniform_int_distribution<int> distribution(0, moves.size()-1);
-        auto [i, j] = moves[distribution(generator)];
-        v.push_back(v.back().potentialBoard(i, j, c));
-        c *= -1.0;
+		for (int k = 0; k < BOARD_SIZE - 4; k++) {
+		
+			if (epsilon > randDouble(generator)) {
+				std::vector<std::tuple<int, int>> moves = v.back().validMoves(c);
+				std::uniform_int_distribution<int> distribution(0, moves.size()-1);
+				auto [i, j] = moves[distribution(generator)];
+				v.push_back(v.back().potentialBoard(i, j, c));
+			} else {
+				auto [i, j] = Flippo::predictMove(v.back());
+				v.push_back(v.back().potentialBoard(i, j, c));
+			}
 
-      }
+			c *= -1.0;
 
-      return v;
-    }
+		}
+
+		return v;
+	}
 
 	static std::tuple<int, int> predictMove(const GameState& s) {
 
@@ -241,7 +248,7 @@ class Flippo {
 		for (unsigned int i = 0; i < moves.size(); i++) {
 
 			auto [x, y] = moves[i];
-			auto p = nn->evaluate(s.potentialBoard(x, y, c).input());
+			auto p = nn->evaluate(c*s.potentialBoard(x, y, c).input());
 
 			if (p[0] > m) {
 				m = p[0];
@@ -250,6 +257,22 @@ class Flippo {
 		}
 
 		return moves[r];
+	}
+
+	static Matrix<double> getTarget(GameState& s) {
+		if (s.isFinal())
+			return Matrix<double>(1, 1, {-s.getScore()});
+
+		int c = s.getColour();
+		double m = nn->min();
+
+		for (auto [i, j] : s.validMoves(c)) {
+			auto p = nn->evaluate(c*s.potentialBoard(i, j, c).input());
+			if (p[0] > m)
+				m = p[0];
+		}
+
+		return Matrix(1, 1, std::vector<double>{m});
 	}
 
 	static std::tuple<int, int> randomBenchmarkerSingle() {
@@ -296,22 +319,6 @@ class Flippo {
 			wins += win;
 		}
 		return {(double)result / ((double)n * 2), (double)wins/((double)n * 2) * 100};
-	}
-
-	static Matrix<double> getTarget(GameState& s) {
-		if (s.isFinal())
-			return Matrix<double>(1, 1, {-s.getScore()});
-
-		int c = s.getColour();
-		double m = nn->min();
-
-		for (auto [i, j] : s.validMoves(c)) {
-			auto p = nn->evaluate(s.potentialBoard(i, j, c).input());
-			if (p[0] > m)
-				m = p[0];
-		}
-
-		return Matrix(1, 1, std::vector<double>{m});
 	}
 };
 

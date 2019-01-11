@@ -12,6 +12,7 @@ all: build
 clean:
 	rm build/*
 run: build
+	mkdir -p saves
 	./build/main
 matrix: unit_tests/src/test_matrix.cpp
 	g++ -Wall -pipe -O2 -g --std=c++17 -lm  -I./src unit_tests/src/test_matrix.cpp -o unit_tests/build/test_matrix

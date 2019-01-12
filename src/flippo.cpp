@@ -5,6 +5,7 @@
 #include <sstream>
 #include <tuple>
 #include "matrix.cpp"
+#include "neural-network.cpp"
 #include <iostream>
 #include <random>
 
@@ -272,7 +273,7 @@ class Flippo {
 				m = p[0];
 		}
 
-		return Matrix(1, 1, std::vector<double>{m});
+		return Matrix<double>(1, 1, std::vector<double>{m});
 	}
 
 	static std::tuple<int, int> randomBenchmarkerSingle() {

@@ -241,17 +241,18 @@ class Flippo {
 	static std::tuple<int, int> predictMove(const GameState& s) {
 
 		int c = s.getColour();
-		double m = nn->min();
 		auto moves = s.validMoves(c);
-		int r = -1;
+		auto [p, q] = moves[0];
+		double m = nn->evaluate(c*s.potentialBoard(p, q, c).input())[0]; 
+		int r = 0;
 
-		for (unsigned int i = 0; i < moves.size(); i++) {
+		for (unsigned int i = 1; i < moves.size(); i++) {
 
 			auto [x, y] = moves[i];
-			auto p = nn->evaluate(c*s.potentialBoard(x, y, c).input());
+			double p = nn->evaluate(c*s.potentialBoard(x, y, c).input())[0];
 
-			if (p[0] > m) {
-				m = p[0];
+			if (p > m) {
+				m = p;
 				r = i;
 			}
 		}
@@ -264,18 +265,20 @@ class Flippo {
 			return Matrix<double>(1, 1, {-s.getScore()});
 
 		int c = s.getColour();
-		double m = nn->min();
+		auto moves = s.validMoves(c);
+		auto [p, q] = moves[0];
+		double m = nn->evaluate(c*s.potentialBoard(p, q, c).input())[0]; 
 
-		for (auto [i, j] : s.validMoves(c)) {
-			auto p = nn->evaluate(c*s.potentialBoard(i, j, c).input());
-			if (p[0] > m)
-				m = p[0];
+		for (auto [i, j] : moves) {
+			double p = nn->evaluate(c*s.potentialBoard(i, j, c).input())[0];
+			if (p > m)
+				m = p;
 		}
 
 		return Matrix(1, 1, std::vector<double>{m});
 	}
 
-	static std::tuple<int, int> randomBenchmarkerSingle() {
+	static std::tuple<int, int, int> randomBenchmarkerSingle() {
 
 		GameState white;
 		GameState black;
@@ -306,19 +309,22 @@ class Flippo {
 		int whiteScore = white.getScore();
 		int blackScore = black.getScore() * -1;
 		int wins = (whiteScore > 0 ? 1 : 0) + (blackScore > 0 ? 1 : 0);
+		int loses = (whiteScore < 0 ? 1 : 0) + (blackScore < 0 ? 1 : 0);
 
-		return {(whiteScore + blackScore), wins};
+		return {(whiteScore + blackScore), wins, loses};
 	}
 
-	static std::tuple<double, double> randomBenchmarker(int n = 10) {
+	static std::tuple<double, double, double> randomBenchmarker(int n = 10) {
 		int result = 0;
 		int wins = 0;
+		int loses = 0;
 		for (int i = 0; i < n; i++) {
-			auto [score, win] = randomBenchmarkerSingle();
+			auto [score, win, lose] = randomBenchmarkerSingle();
 			result += score;
 			wins += win;
+			loses += lose;
 		}
-		return {(double)result / ((double)n * 2), (double)wins/((double)n * 2) * 100};
+		return {(double) result / ((double)n * 2), (double)wins/((double)n * 2) * 100, (double) loses / ((double) n*2) * 100};
 	}
 };
 

@@ -50,7 +50,7 @@ class QLearner {
 
 		}
 
-		void replayTrain(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false) {
+		void replayTrain(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
 			for (; epochs != 0; epochs--) {
 				std::vector<VectorGameState> games(nGames);
 				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGame(epsilon);});
@@ -70,14 +70,15 @@ class QLearner {
 				}
 
 				approximator->train(data, target, repeats, batchSize, eta);
+				approximator->printNetwork();
 
 				if (verbose) {
-					std::cout << "Loop: " << epochs << std::endl;
+					std::cout << "Loop: " << epochs << '\n';
 				}
 
-				if (test) {
-					auto [score, win] = Flippo::randomBenchmarker(500);
-					std::cout << "Avg score: " << score << " Percentage won: " << win << std::endl;
+				if (test && epochs%testRate == 0) {
+					auto [score, win, lose] = Flippo::randomBenchmarker(testSize);
+					std::cout << "Avg score: " << score << " Percentage won: " << win <<  " Percentage lost: " << lose << " Percentage draw: " << (100 - win - lose) << std::endl;
 
 				}
 				epsilon *= decay;

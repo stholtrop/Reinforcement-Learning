@@ -7,9 +7,6 @@
 template<typename T>
 class Function {
 	public:
-		T min;
-
-		Function<T>(T m=-1) : min(m) {}
 		virtual T function(const T x) const = 0;
 		virtual T derivative(const T x) const = 0;
 		virtual int getID() const = 0;
@@ -19,8 +16,6 @@ class Function {
 template<typename T>
 class Linear : public Function<T> {
 	public:
-
-		Linear<T>() : Function<T>(-std::numeric_limits<T>::max()) {}
 
 		T function(const T x) const {
 			return x;

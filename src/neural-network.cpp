@@ -30,8 +30,6 @@ class NeuralNetwork {
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> activations;
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> derivatives;
 
-		T minimalValue;
-
 	public:
 		NeuralNetwork() {}
 
@@ -52,8 +50,6 @@ class NeuralNetwork {
 
 			activations.push_back(Matrix<T>::wrap([f] (const T x) { return f->function(x);}));
 			derivatives.push_back(Matrix<T>::wrap([f] (const T x) { return f->derivative(x);}));
-
-			minimalValue = f->min;
 
 			inputSize = sizes[0];
 			outputSize = *sizes.rbegin();
@@ -149,10 +145,6 @@ class NeuralNetwork {
 				nabla_b[i] += delta;
 				nabla_w[i] += delta ^ activated[i].transpose();
 			}
-		}
-
-		T min() {
-			return minimalValue;
 		}
 
 	void saveNetwork(const std::string &filename) const {

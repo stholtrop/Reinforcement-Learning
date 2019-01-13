@@ -37,6 +37,11 @@ class Matrix {
 			assert(!isCorrupted());
 		}
 
+		// Get data vector
+		std::vector<T> getData() {
+			return data;
+		}
+
 		// Matrix read and write
 		static Matrix<T> readFromFile(const std::string &filename) {
 			std::ifstream file;

@@ -4,3 +4,5 @@ data/*
 unit_tests/build/*
 .vscode
 saves/*
+python_ext/build
+python_ext/__pycache__

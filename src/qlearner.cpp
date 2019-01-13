@@ -70,7 +70,14 @@ class QLearner {
 				}
 
 				approximator->train(data, target, repeats, batchSize, eta);
-				approximator->printNetwork();
+
+				if (approximator->containsNan()) {
+					for (int i = 0; i < data.size(); i++) {
+						std::cout << data[i].transpose() << std::endl;
+						std::cout << target[i] << std::endl;
+					}
+					break;
+				}
 
 				if (verbose) {
 					std::cout << "Loop: " << epochs << '\n';

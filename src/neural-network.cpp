@@ -250,6 +250,10 @@ class NeuralNetwork {
 		}
 
 	}
+
+	bool containsNan() {
+		return std::isnan(weights[0][0]);
+	}
 };
 
 #endif

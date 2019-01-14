@@ -99,6 +99,7 @@ class NeuralNetwork {
 					});
 
 					updateBatch(batch_data, batch_target, eta);
+
 				}
 			}
 		}

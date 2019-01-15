@@ -28,7 +28,7 @@ test_game: game
 	./unit_tests/build/test_game
 qlearner:
 	#g++ -Wall -pipe -Og -g -fsanitize=address -fsanitize=undefined -fsanitize=leak --std=c++17 -lm -I./src unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
-	g++ -Wall -pipe -Og -g --std=c++17 -lm -I./src unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
+	g++ -Wall -pipe -O3 --std=c++17 -lm -I./src unit_tests/src/qlearner_test.cpp -o unit_tests/build/qlearner
 qlearner_test: qlearner
 	./unit_tests/build/qlearner
 nn:

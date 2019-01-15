@@ -26,6 +26,7 @@ class NeuralNetwork {
 
 		const Function<T>* activationFunction;
 		const Function<T>* finalFunction;
+		constexpr static T threshold = 100;
 
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> activations;
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> derivatives;
@@ -122,6 +123,10 @@ class NeuralNetwork {
 			for (unsigned int i = 0; i < biases.size(); i++) {
 				weights[i] -= nabla_w[i] * (eta/data.size());
 				biases[i] -= nabla_b[i] * (eta/data.size());
+				bool reduction = reduceToThresholdOrVoidNAN();
+				if (reduction) {
+					std::cout << "Reduction was necessary" << std::endl;
+				}
 			}
 		}
 
@@ -250,6 +255,35 @@ class NeuralNetwork {
 			std::cout << weights[i] << std::endl << biases[i] << std::endl;
 		}
 
+	}
+
+	bool reduceToThresholdOrVoidNAN() {
+		bool detected = false;
+		for (unsigned int i = 0; i < biases.size(); i++) {
+			for (unsigned int j = 0; j < biases[i].rows * biases[i].columns; j++) {
+				if (biases[i][j] > threshold || biases[i][j] < -threshold || std::isnan(biases[i][j])) {
+					if (std::signbit(biases[i][j])) {
+						biases[i][j] = 1-threshold;
+					}else {
+						biases[i][j] = threshold-1;
+					}
+					detected = true;
+				}
+			}
+		}
+		for (unsigned int i = 0; i < weights.size(); i++) {
+			for (unsigned int j = 0; j < weights[i].rows * weights[i].columns; j++) {
+				if (weights[i][j] > threshold || weights[i][j] < -threshold || std::isnan(weights[i][j])) {
+					if (std::signbit(weights[i][j])) {
+						weights[i][j] = 1-threshold;
+					}else {
+						weights[i][j] = threshold-1;
+					}
+					detected = true;
+				}
+			}
+		}
+		return detected;
 	}
 
 	bool containsNan() {

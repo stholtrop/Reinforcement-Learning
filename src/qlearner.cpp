@@ -8,10 +8,10 @@ class QLearner {
 
 	using VectorMatrix = std::vector<Matrix<double>>;
     using VectorGameState = std::vector<GameState>;
-	NeuralNetwork<double>* approximator;
-	double gamma;
 
 	public:
+		NeuralNetwork<double>* approximator;
+		double gamma;
 
 		QLearner(NeuralNetwork<double>* a, double g) : approximator(a), gamma(g) {
 			Flippo::initialise(approximator);
@@ -58,7 +58,7 @@ class QLearner {
 				size_t s = games[0].size();
 
 				for (unsigned int i = 0; i < s; i++) {
-					
+
 					int c = games[0][s - i - 1].getColour();
 
 					for (int k = 0; k < nGames; k++) {

@@ -53,7 +53,7 @@ class QLearner {
 		void replayTrain(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
 			for (; epochs != 0; epochs--) {
 				std::vector<VectorGameState> games(nGames);
-				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGame(epsilon);});
+				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGameWinner(epsilon);});
 				VectorMatrix data, target;
 				size_t s = games[0].size();
 

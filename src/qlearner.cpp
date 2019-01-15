@@ -82,6 +82,9 @@ class QLearner {
 
 				if (test && epochs%testRate == 0) {
 					auto [score, win, lose] = Flippo::randomBenchmarker(testSize);
+					if (verbose) {
+						approximator->printNetwork();
+					}
 					std::cout << "Avg score: " << score << " Percentage won: " << win <<  " Percentage lost: " << lose << " Percentage draw: " << (100 - win - lose) << std::endl;
 
 				}

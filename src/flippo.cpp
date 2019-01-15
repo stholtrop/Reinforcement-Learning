@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 
+const int MAX_SCORE = 64;
 const int BOARD_WIDTH = 8;
 const int BOARD_HEIGHT = 8;
 const int BOARD_SIZE = BOARD_WIDTH * BOARD_HEIGHT;
@@ -263,7 +264,7 @@ class Flippo {
 
 	static Matrix<double> getTarget(GameState& s) {
 		if (s.isFinal())
-			return Matrix<double>(1, 1, {-s.getScore()});
+			return Matrix<double>(1, 1, {-s.getScore()})/MAX_SCORE;
 
 		int c = s.getColour();
 		auto moves = s.validMoves(c);

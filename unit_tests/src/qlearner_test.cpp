@@ -18,11 +18,11 @@ void gracefulExit(int signum) {
 
 int main() {
 	signal(SIGINT, gracefulExit);
-	Function<double> *s = new ELU<double>(1), *l = new Linear<double>();
+	Function<double> *s = new ELU<double>(1), *l = new TanH<double>();
 	NeuralNetwork<double> nn = NeuralNetwork<double>({64, 32, 1}, s, l);
 	ql = new QLearner(&nn, 1);
 	auto [score, wins, loses] = Flippo::randomBenchmarker(10);
 	std::cout << "Initial score: " << score << " Initial wins: " << wins << " Initial loses: " << loses << " Initial draws: " << (100 - loses - wins) << endl;
-	ql->replayTrain(5000, 100, 0.01, 1, 0.999, 1, -1, false, true, 100, 1000);
+	ql->replayTrain(10, 10, 0.001, 1, 0.999, 1, -1, false, true, 100, 1000);
 	delete s; delete l; delete ql;
 }

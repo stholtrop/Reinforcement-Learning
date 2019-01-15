@@ -214,13 +214,46 @@ class Flippo {
 		nn = p;
 	}
 
+	static VectorGameState createGameWinner(double epsilon) {
+
+		VectorGameState p1, p2;
+		GameState current;
+		double c = 1.0;
+		std::uniform_real_distribution<double> randDouble(0.0, 1.0);
+	
+		for (int k = 0; k < BOARD_SIZE - 4; k++) {
+			std::tuple<int, int> move;
+			if (epsilon > randDouble(generator)) {
+				std::vector<std::tuple<int, int>> moves = current.validMoves(c);
+				std::uniform_int_distribution<int> distribution(0, moves.size()-1);
+				move = moves[distribution(generator)];
+			} else {
+				move = Flippo::predictMove(current);
+			}
+			auto [i, j] = move;
+			if (c == 1.0) {
+				p1.push_back(current);
+			}else {
+				p2.push_back(current);
+			}
+			current = current.potentialBoard(i, j, c);
+			c *= -1.0;
+		}
+		if (p1.back().getScore() > p2.back().getScore()) {
+			return p1;
+		}else {
+			return p2;
+		}
+		
+	}
+
 	static VectorGameState createGame(double epsilon) {
 
 		VectorGameState v;
 		v.push_back(GameState());
 		double c = 1.0;
 		std::uniform_real_distribution<double> randDouble(0.0, 1.0);
-
+		
 		for (int k = 0; k < BOARD_SIZE - 4; k++) {
 		
 			if (epsilon > randDouble(generator)) {

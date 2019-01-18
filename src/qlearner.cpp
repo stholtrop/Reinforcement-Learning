@@ -51,6 +51,7 @@ class QLearner {
 		}
 
 		void replayTrain(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
+
 			for (; epochs != 0; epochs--) {
 				std::vector<VectorGameState> games(nGames);
 				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGameWinner(epsilon);});
@@ -64,17 +65,52 @@ class QLearner {
 					for (int k = 0; k < nGames; k++) {
 
 						data.push_back(c*games[k][s - i - 1].input());
-						target.push_back(Flippo::getTarget(games[k][s - 1 - i]));
+						target.push_back(Flippo::getTarget(games[k][s - i - 1]));
 
 					}
 				}
 
 				approximator->train(data, target, repeats, batchSize, eta);
 
-				if (approximator->containsNan()) {
-					std::cout << "Nan detected" << std::endl;
-					break;
+				if (verbose) {
+					std::cout << "Loop: " << epochs << '\n';
 				}
+
+				if (test && epochs%testRate == 0) {
+					auto [score, win, lose] = Flippo::randomBenchmarker(testSize);
+					if (verbose) {
+						approximator->printNetwork();
+					}
+					std::cout << "Avg score: " << score << " Percentage won: " << win <<  " Percentage lost: " << lose << " Percentage draw: " << (100 - win - lose) << std::endl;
+
+				}
+				epsilon *= decay;
+
+			}
+
+		}
+
+		void replayTrainFinalState(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
+
+			for (; epochs != 0; epochs--) {
+				std::vector<VectorGameState> games(nGames);
+				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGameWinner(epsilon);});
+				VectorMatrix data, target;
+				size_t s = games[0].size();
+
+				for (unsigned int i = 0; i < s; i++) {
+
+					int c = games[0][s - i - 1].getColour();
+
+					for (int k = 0; k < nGames; k++) {
+
+						data.push_back(c*games[k][s - i - 1].input());
+						target.push_back(Matrix<double>(1, 1, {c*games[k][s - i - 1].getScore()})/64);
+
+					}
+				}
+
+				approximator->train(data, target, repeats, batchSize, eta);
 
 				if (verbose) {
 					std::cout << "Loop: " << epochs << '\n';

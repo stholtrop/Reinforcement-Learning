@@ -40,14 +40,9 @@ int main(int argc, char **argv) {
   } else {
     nn = new NeuralNetwork<double>({64, 32, 1}, s, l);
   }
-  ql = new QLearner(nn, 0.9);
+  ql = new QLearner(nn, 1.0);
   cout << "Initialized qlearner" << endl;
-  auto [score2, wins2] = Flippo::randomBenchmarker(5000);
-  cout << "Finished benchmark" << endl;
-  cout << "Avg score: " << score2 << " Percentage won: " << wins2 << endl;
-  ql->initialize(5000, 50, 0.1, true);
-  auto [score, wins] = Flippo::randomBenchmarker(5000);
-  cout << "Avg score: " << score << " Percentage won: " << wins << endl;
+  ql->learningTD(30, 100, 0.001, 0.1, 1, 1, -1, false, true, 10000, 5000);
   if (filename != nullptr) {
     cout << "Saving results..." << endl;
     ql->save(string(filename));

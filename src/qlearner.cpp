@@ -13,58 +13,26 @@ class QLearner {
 		NeuralNetwork<double>* approximator;
 		double gamma;
 
-		QLearner(NeuralNetwork<double>* a, double g) : approximator(a), gamma(g) {
-			Flippo::initialise(approximator);
-		}
+		QLearner(NeuralNetwork<double>* a, double g) : approximator(a), gamma(g) {}
 
 		QLearner(const std::string &filename, double g) {
 			approximator = new NeuralNetwork<double>(filename);
 			gamma = g;
 		}
 
-		void initialize(int nGames, int batchSize, double eta, bool verbose = false) {
-
-			std::vector<VectorGameState> games(nGames);
-			std::generate(games.begin(), games.end(), [] () {return Flippo::createGame(1);});
-			VectorMatrix data, target;
-			size_t s = games[0].size();
-
-			for (unsigned int i = 0; i < s; i++) {
-
-				int c = games[0][s - i - 1].getColour();
-
-				for (int k = 0; k < nGames; k++) {
-
-					data.push_back(c*games[k][s - i - 1].input());
-					target.push_back(Flippo::getTarget(games[k][s - 1 - i]));
-
-				}
-
-				if (verbose) {
-					std::cout << "Training " << i << " of " << s - 1 << std::endl;
-				}
-
-				approximator->train(data, target, 1, batchSize, eta);
-
-			}
-
-		}
-
-		void replayTrain(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
+		void learningTD(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
 
 			for (; epochs != 0; epochs--) {
 				std::vector<VectorGameState> games(nGames);
-				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGameWinner(epsilon);});
+				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGame(epsilon);});
 				VectorMatrix data, target;
 				size_t s = games[0].size();
 
 				for (unsigned int i = 0; i < s; i++) {
 
-					int c = games[0][s - i - 1].getColour();
-
 					for (int k = 0; k < nGames; k++) {
 
-						data.push_back(c*games[k][s - i - 1].input());
+						data.push_back(games[k][s - i - 1].input());
 						target.push_back(Flippo::getTarget(games[k][s - i - 1]));
 
 					}
@@ -84,13 +52,14 @@ class QLearner {
 					std::cout << "Avg score: " << score << " Percentage won: " << win <<  " Percentage lost: " << lose << " Percentage draw: " << (100 - win - lose) << std::endl;
 
 				}
+
 				epsilon *= decay;
 
 			}
 
 		}
 
-		void replayTrainFinalState(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
+		void learningMC(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
 
 			for (; epochs != 0; epochs--) {
 				std::vector<VectorGameState> games(nGames);
@@ -124,6 +93,7 @@ class QLearner {
 					std::cout << "Avg score: " << score << " Percentage won: " << win <<  " Percentage lost: " << lose << " Percentage draw: " << (100 - win - lose) << std::endl;
 
 				}
+
 				epsilon *= decay;
 
 			}

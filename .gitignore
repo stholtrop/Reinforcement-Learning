@@ -6,3 +6,5 @@ unit_tests/build/*
 saves/*
 python_ext/build
 python_ext/__pycache__
+.idea
+test.ssvn

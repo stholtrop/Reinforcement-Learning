@@ -11,6 +11,7 @@
 #include <random>
 #include <fstream>
 #include <string>
+#include "regularizers.cpp"
 
 
 template<typename T>
@@ -31,18 +32,29 @@ class NeuralNetwork {
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> activations;
 		std::vector<std::function<Matrix<T>(const Matrix<T>&)>> derivatives;
 
+		const Regularizer<T>* regularizer;
+		bool regularization_enabled;
+
+		int current_epoch = 0;
+
 	public:
 		NeuralNetwork() {}
 
 		NeuralNetwork(const std::string &filename) {
+			regularization_enabled = false;
+			regularizer = nullptr;
 			std::cout << "Initializing from filename" << std::endl;
 			readNetwork(filename);
 		}
 
-		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f) {
+		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f, const Regularizer<T>* r) {
 
 			activationFunction = av;
 			finalFunction = f;
+
+			regularizer = r;
+			regularization_enabled = (r != nullptr);
+
 
 			for (unsigned int i = 0; i < sizes.size() - 2; i++) {
 				activations.push_back(Matrix<T>::wrap([av] (const T x) { return av->function(x);}));
@@ -77,6 +89,7 @@ class NeuralNetwork {
 			std::default_random_engine generator(time(0));
 
 			for (int i = 0; i < epochs; i++) {
+				current_epoch = i;
 
 				if (verbose) {
 					std::cout << "At epoch " << i+1 << " of " << epochs << std::endl;
@@ -150,6 +163,12 @@ class NeuralNetwork {
 				delta = (weights[i + 1].transpose() ^ delta) * derivatives[i](results[i]);
 				nabla_b[i] += delta;
 				nabla_w[i] += delta ^ activated[i].transpose();
+				// Add Regularization parameter
+				if (regularization_enabled) {
+					nabla_w[i] += regularizer->penalty(weights[i], current_epoch);
+				}else {
+					std::cout << "Regularization disabled" << std::endl;
+				}
 			}
 		}
 
@@ -249,7 +268,7 @@ class NeuralNetwork {
 		}
 	}
 
-	void printNetwork() {
+	inline void printNetwork() {
 
 		for (unsigned int i = 0; i < weights.size(); i++) {
 			std::cout << weights[i] << std::endl << biases[i] << std::endl;
@@ -286,7 +305,7 @@ class NeuralNetwork {
 		return detected;
 	}
 
-	bool containsNan() {
+	inline bool containsNan() {
 		return std::isnan(weights[0][0]);
 	}
 };

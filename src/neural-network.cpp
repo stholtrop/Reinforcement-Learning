@@ -1,6 +1,7 @@
 #ifndef NEURALNETWORK
 #define NEURALNETWORK
 #include "matrix.cpp"
+#include <utility>
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -13,10 +14,18 @@
 #include <string>
 #include "regularizers.cpp"
 
+template<typename T>
+struct State {
+	std::vector<Matrix<T>> weights;
+	std::vector<Matrix<T>> biases;
+};
 
 template<typename T>
 class NeuralNetwork {
+
 	using VectorMatrix = typename std::vector<Matrix<T>>;
+
+
 	private:
 
 		VectorMatrix weights;
@@ -47,14 +56,13 @@ class NeuralNetwork {
 			readNetwork(filename);
 		}
 
-		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f, const Regularizer<T>* r) {
+		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f, const Regularizer<T>* r = nullptr) {
 
 			activationFunction = av;
 			finalFunction = f;
 
 			regularizer = r;
 			regularization_enabled = (r != nullptr);
-
 
 			for (unsigned int i = 0; i < sizes.size() - 2; i++) {
 				activations.push_back(Matrix<T>::wrap([av] (const T x) { return av->function(x);}));
@@ -73,8 +81,7 @@ class NeuralNetwork {
 			}
 		}
 
-
-		Matrix<T> evaluate(Matrix<T> m){
+		Matrix<T> evaluate(Matrix<T> m) {
 
 			for (unsigned int i = 0; i < weights.size(); i++)
 				m = activations[i]((weights[i] ^ m) + biases[i]);
@@ -308,6 +315,23 @@ class NeuralNetwork {
 	inline bool containsNan() {
 		return std::isnan(weights[0][0]);
 	}
+
+	std::pair<T, T> difference(const State<T> state) const {
+		T w = 0, b = 0;
+		for (int i = 0; i < weights.size(); i++) {
+			Matrix<T> diff = weights[i] - state.weights[i];
+			w += (diff*diff).sumValues();
+		}
+
+		for (int i = 0; i < biases.size(); i++) {
+			Matrix<T> diff = biases[i] - state.biases[i];
+			b += (diff*diff).sumValues();
+		}
+
+		return std::make_pair(w, b);
+	}
+
 };
 
 #endif
+

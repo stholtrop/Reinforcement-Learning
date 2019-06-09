@@ -325,6 +325,12 @@ class Matrix {
 			oss << rows << 'x' << columns;
 			return oss.str();
 		}
+
+		T sumValues() const {
+			T r = 0;
+			for (T i : data) r += i;
+			return r;
+		}
 };
 
 template<typename T>

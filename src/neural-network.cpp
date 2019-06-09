@@ -47,7 +47,7 @@ class NeuralNetwork {
 			readNetwork(filename);
 		}
 
-		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f, const Regularizer<T>* r) {
+		NeuralNetwork(std::vector<size_t> sizes, const Function<T>* av, const Function<T>* f, const Regularizer<T>* r = nullptr) {
 
 			activationFunction = av;
 			finalFunction = f;

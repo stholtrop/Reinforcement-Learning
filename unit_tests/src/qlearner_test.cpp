@@ -17,16 +17,14 @@ void gracefulExit(int signum) {
 }
 
 int main() {
-	double eta = 0.001;
+	double eta = 0.01;
 	signal(SIGINT, gracefulExit);
 	Function<double> *s = new LeakyRELU<double>(), *l = new TanH<double>();
-	NeuralNetwork<double> nn = NeuralNetwork<double>({64, 48, 32, 32, 32, 32, 16, 1}, s, l);
+	NeuralNetwork<double> nn = NeuralNetwork<double>({64, 64, 32, 16, 1}, s, l);
 	Flippo::initialise(&nn);
 	ql = new QLearner(&nn, 1);
-	auto [score, wins, loses] = Flippo::randomBenchmarker(5000);
+	auto [score, wins, loses] = Flippo::randomBenchmarker(1000);
 	std::cout << "Initial score: " << score << " Initial wins: " << wins << " Initial loses: " << loses << " Initial draws: " << (100 - loses - wins) << endl;
-	ql->learningTD(500, 100, eta, 0.1, 1, 1, -1, false, true, 10, 500);
-	auto [score1, wins1, loses1] = Flippo::randomBenchmarker(5000);
-	std::cout << "Initial score: " << score1 << " Initial wins: " << wins1 << " Initial loses: " << loses1 << " Initial draws: " << (100 - loses1 - wins1) << endl;
+	ql->learningTD(1, 10, eta, 0.5, 1, 1, -1, false, true, 10, 100);
 	delete s; delete l; delete ql;
 }

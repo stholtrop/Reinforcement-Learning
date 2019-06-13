@@ -22,6 +22,8 @@ class QLearner {
 
 		void learningTD(int nGames, int batchSize, double eta, double epsilon, double decay, int repeats = 1, int epochs = -1, bool verbose = false, bool test = false, int testRate = 100, int testSize=5000) {
 
+			State<double> * start = approximator->getState();
+
 			for (; epochs != 0; epochs--) {
 				std::vector<VectorGameState> games(nGames);
 				std::generate(games.begin(), games.end(), [epsilon] () {return Flippo::createGame(epsilon);});
@@ -45,6 +47,7 @@ class QLearner {
 				}
 
 				if (test && epochs%testRate == 0) {
+					std::cout << approximator->normalizedDifference(*start) << std::endl;
 					auto [score, win, lose] = Flippo::randomBenchmarker(testSize);
 					if (verbose) {
 						approximator->printNetwork();

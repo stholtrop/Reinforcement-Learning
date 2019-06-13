@@ -150,7 +150,7 @@ class NeuralNetwork {
 			}
 		}
 
-		void updateNablas(const Matrix<T>& data, const Matrix<T>& target, VectorMatrix& nabla_b, VectorMatrix& nabla_w) {
+	void updateNablas(const Matrix<T>& data, const Matrix<T>& target, VectorMatrix& nabla_b, VectorMatrix& nabla_w) {
 
 			VectorMatrix activated, results;
 			activated.reserve(weights.size() + 1);
@@ -173,8 +173,6 @@ class NeuralNetwork {
 				// Add Regularization parameter
 				if (regularization_enabled) {
 					nabla_w[i] += regularizer->penalty(weights[i], current_epoch);
-				}else {
-					std::cout << "Regularization disabled" << std::endl;
 				}
 			}
 		}
@@ -316,19 +314,48 @@ class NeuralNetwork {
 		return std::isnan(weights[0][0]);
 	}
 
-	std::pair<T, T> difference(const State<T> state) const {
+	std::pair<T, T> difference(const State<T> & state) const {
 		T w = 0, b = 0;
-		for (int i = 0; i < weights.size(); i++) {
+		for (unsigned int i = 0; i < weights.size(); i++) {
 			Matrix<T> diff = weights[i] - state.weights[i];
 			w += (diff*diff).sumValues();
 		}
 
-		for (int i = 0; i < biases.size(); i++) {
+		for (unsigned int i = 0; i < biases.size(); i++) {
 			Matrix<T> diff = biases[i] - state.biases[i];
 			b += (diff*diff).sumValues();
 		}
 
 		return std::make_pair(w, b);
+	}
+
+	int number_of_weights() const {
+		int r = 0;
+		for (Matrix<T> m : weights) {
+			r += m.rows * m.columns;
+		}
+		return r;
+	}
+	
+	int number_of_biases() const {
+		int r = 0;
+		for (Matrix<T> m : biases) {
+			r += m.rows * m.columns;
+		}
+		return r;
+	}
+
+	T normalizedDifference(const State<T> & state) const {
+		std::pair<T, T> p = difference(state);
+		return (p.first + p.second) / (number_of_weights() + number_of_biases());
+
+	}
+
+	State<T> * getState() const { 
+		State<T> * result = new State<T>;
+		result->weights = weights;
+		result->biases = biases;
+		return result;
 	}
 
 };

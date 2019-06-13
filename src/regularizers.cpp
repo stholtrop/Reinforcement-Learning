@@ -39,3 +39,4 @@ class ExponentialDecayRegularizer : public Regularizer<T> {
 };
 
 #endif
+

@@ -7,3 +7,4 @@ int main () {
     std::cout << t[0] << std::endl;
     std::cout << x->penalty(t, 1) << std::endl;
 }
+
